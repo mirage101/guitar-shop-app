@@ -18,6 +18,10 @@ yarn-error.log*
 .env.*
 !.env.example
 
+# Prisma local database
+prisma/*.db
+prisma/*.db-journal
+
 # OS/editor
 .DS_Store
 Thumbs.db
