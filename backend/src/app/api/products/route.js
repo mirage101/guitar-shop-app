@@ -1,6 +1,28 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+const jsonResponse = (body, init = {}) =>
+  NextResponse.json(body, {
+    ...init,
+    headers: {
+      ...CORS_HEADERS,
+      ...(init.headers || {}),
+    },
+  });
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 export async function POST(request) {
   try {
     const data = await request.json();
@@ -11,7 +33,7 @@ export async function POST(request) {
     });
 
     if (!productType) {
-      return NextResponse.json(
+      return jsonResponse(
         { status: false, message: "Product Type not found." },
         { status: 404 }
       );
@@ -33,7 +55,7 @@ export async function POST(request) {
       },
     });
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         status: true,
         message: "Product has been created!",
@@ -42,7 +64,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    return NextResponse.json(
+    return jsonResponse(
       {
         status: false,
         message: "Something Went Wrong.",
@@ -124,9 +146,9 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json({ status: true, data: products });
+    return jsonResponse({ status: true, data: products });
   } catch (error) {
-    return NextResponse.json(
+    return jsonResponse(
       {
         status: false,
         message: "Something Went Wrong.",
