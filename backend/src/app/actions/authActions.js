@@ -45,7 +45,6 @@ export async function jwtTokenVerification() {
   const tokenData = await verifyJWT(token);
 
   if (!tokenData) {
-    deleteCookie("jwt_token");
     return redirect("/login");
   }
 
@@ -59,6 +58,10 @@ export async function getUserData() {
       id: decodedToken.id,
     },
   });
+
+  if (!userData) {
+    return redirect("/login?errorMessage=Session expired. Please login again.");
+  }
 
   return userData;
 }
