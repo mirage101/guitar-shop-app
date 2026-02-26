@@ -49,7 +49,7 @@ export default function Sidebar({ userData }) {
             src={"/user.svg"}
             width={40}
           />
-          <div className="m-auto text-lg">{userData.userName} </div>
+          <div className="m-auto text-lg">{userData?.userName ?? "Admin"} </div>
           <Button
             className="bg-transparent text-black p-0"
             onClick={() => logoutUser()}
