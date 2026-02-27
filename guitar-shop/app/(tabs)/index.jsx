@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Platform, Text, TextInput, View } from 'react-native';
+import { FlatList, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from "expo-constants";
 import ProductCard from '../../components/productCard';
 import {FontAwesome} from "@expo/vector-icons";
-
+import FilterModal from '../../components/FilterModal';
+import { objectToQueryString } from '../../lib/utils';
 const configuredBaseUrl = Constants.expoConfig?.extra?.BASE_URL;
 
 const trimTrailingSlash = (url) => url?.replace(/\/+$/, '');
@@ -47,7 +48,10 @@ export default function App() {
   const [filters, setFilters] = useState({
     search: ""
   })
-
+  const [openFilterModal, setOpenFilterModal] = useState(false);
+  const toggleFilterModal = () => {
+    setOpenFilterModal(!openFilterModal);
+  }
   const fetchProductData = async () => {
     try {
       setLoading(true);
@@ -63,8 +67,9 @@ export default function App() {
       for (const baseUrl of baseUrls) {
         try {
           const response = await fetch(
-            `${baseUrl}/api/products${queryString ? `?${queryString}` : ''}`
+            `${baseUrl}/api/products${objectToQueryString(filters)? `?${objectToQueryString(filters)}` : ''}`
           );
+          console.log('response:', response)
           if (!response.ok) {
             lastErrorMessage = `Request failed with status ${response.status}`;
             continue;
@@ -89,7 +94,7 @@ export default function App() {
     }
   };
 
-  console.log(products);
+  // console.log(products);
   
   useEffect(()=>{
     const timeoutId = setTimeout(() => {
@@ -103,17 +108,25 @@ export default function App() {
     fetchProductData()
   }, [debouncedSearch]);
   console.log(filters);
+  const filterHandler = (filterData) => {
+    setFilters((prev) => ({...prev, ...filterData}))
+  }
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 bg-white">
-        <View className="relative p-2">
-        <FontAwesome name="search" size={16} color="gray" className="absolute top-4 left-4"/>
-          <TextInput 
-            className="px-4 py-2 pl-8 border border-gray-300 rounded-md" 
-            placeholder="Search..."
-            value={filters.search}
-            onChangeText={(text) => setFilters({search: text})}
-          />
+        <View className="flex-row items-center w-10/12 gap-2">
+          <View className="relative p-2">
+          <FontAwesome name="search" size={16} color="gray" className="absolute top-4 left-4"/>
+            <TextInput 
+              className="px-4 py-2 pl-8 border border-gray-300 rounded-md" 
+              placeholder="Search..."
+              value={filters.search}
+              onChangeText={(text) => setFilters({search: text})}
+            />
+          </View>
+          <TouchableOpacity onPress={toggleFilterModal} className="px-3 py-1 border border-blue-500 rounded-md">
+            <Text className="text-lg font-semibold text-center text-blue-500">Filter</Text>
+          </TouchableOpacity>
         </View>
         {products.length>0? (
           <FlatList
@@ -135,6 +148,7 @@ export default function App() {
           </View>
         )}        
       </View>
+      <FilterModal openFilterModal={openFilterModal} toggleFilterModal={toggleFilterModal} filterHandler={filterHandler}/>
     </SafeAreaView>
   );
 }
