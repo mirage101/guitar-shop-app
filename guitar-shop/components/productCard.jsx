@@ -1,6 +1,7 @@
 import { useState } from "react";
-import {Image, Text, View} from "react-native";
+import {Image, Text, TouchableOpacity, View} from "react-native";
 import Constants from "expo-constants";
+import {router} from "expo-router";
 
 const configuredBaseUrl = Constants.expoConfig?.extra?.BASE_URL;
 const trimTrailingSlash = (url) => url?.replace(/\/+$/, '');
@@ -41,7 +42,9 @@ const ProductCard = ({product, backendBaseUrl}) => {
         ) : (
             <Text>Image not available</Text>
         )}
+        <TouchableOpacity onPress={()=> router.push(`/product/${product?.id}`)}>
             <Text className="text-lg font-semibold">{product?.name}</Text>
+        </TouchableOpacity>
             <Text className="text-sm text-gray-400">{product?.description}</Text>
             <View className="flex-row items-center mt-3 gap-x-3">
                 <Text className="text-lg font-semibold">${product?.sellPrice}</Text>
