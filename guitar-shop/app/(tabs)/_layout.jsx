@@ -2,10 +2,12 @@ import { View, Text } from 'react-native';
 import { Tabs } from 'expo-router'
 import {FontAwesome} from '@expo/vector-icons'
 import { useProductContext } from '../../components/ProductContext'
+import { useUserContext } from '../../components/UserContext';
 
 export default function TabLayout() {
     const {cartItems} = useProductContext();
-    const isLoggedIn = false;
+    const {userData} = useUserContext();
+    
   return (
    <Tabs>
     <Tabs.Screen name="index" options={{
@@ -28,7 +30,7 @@ export default function TabLayout() {
         title: "Profile",
         headerShown:false,
         tabBarItemStyle: {
-            display: isLoggedIn ? "flex" : "none"
+            display: userData ? "flex" : "none"
         },
         tabBarIcon: ({color}) => <FontAwesome name="user" size={26} color={color}/>
     }}/>
@@ -36,7 +38,7 @@ export default function TabLayout() {
         title: "Login",
         headerShown:false,
          tabBarItemStyle: {
-            display: isLoggedIn ? "none" : "flex"
+            display: userData ? "none" : "flex"
         },
         tabBarIcon: ({color}) => <FontAwesome name="user" size={26} color={color}/>
     }}/>
