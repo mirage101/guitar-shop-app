@@ -5,6 +5,7 @@ import { useProductContext } from '../../components/ProductContext'
 
 export default function TabLayout() {
     const {cartItems} = useProductContext();
+    const isLoggedIn = false;
   return (
    <Tabs>
     <Tabs.Screen name="index" options={{
@@ -26,8 +27,28 @@ export default function TabLayout() {
     <Tabs.Screen name="profile" options={{
         title: "Profile",
         headerShown:false,
+        tabBarItemStyle: {
+            display: isLoggedIn ? "flex" : "none"
+        },
         tabBarIcon: ({color}) => <FontAwesome name="user" size={26} color={color}/>
     }}/>
+    <Tabs.Screen name="login" options={{
+        title: "Login",
+        headerShown:false,
+         tabBarItemStyle: {
+            display: isLoggedIn ? "none" : "flex"
+        },
+        tabBarIcon: ({color}) => <FontAwesome name="user" size={26} color={color}/>
+    }}/>
+    <Tabs.Screen name="register" options={{
+        title: "Register",
+        headerShown:false,
+        tabBarIcon: ({color}) => <FontAwesome name="user" size={26} color={color}/>,
+        tabBarItemStyle: {
+            display: "none",
+        }
+    }}/>
    </Tabs>
+   
   )
 }
