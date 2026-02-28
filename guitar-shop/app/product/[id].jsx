@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useEffect,useState } from "react";
 import Constants from "expo-constants"
@@ -6,10 +6,11 @@ import {FontAwesome} from "@expo/vector-icons";
 import { useProductContext } from "../../components/ProductContext";
 import { cn } from "../../lib/utils";
 
+
 const BASE_URL = Constants.expoConfig.extra.BASE_URL;
 const ProductDetails = () =>{
     const {id} = useLocalSearchParams();
-    const {addProductToCart, removeProductFromCart, cartItems} = useProductContext();
+    const {addProductToCart, removeProductFromCart, cartItems, setCartItems} = useProductContext();
     const [product, setProduct] = useState({});
     const [loading, setLoading] = useState(true);
 
@@ -54,6 +55,16 @@ const ProductDetails = () =>{
                 quantity: 1,
             });  
         }        
+    }
+
+    const handleBuyProduct = () => {
+        setCartItems([
+            {
+                ...product,
+                quantity: 1
+            }
+        ]);
+        router.push("/cart");
     }
 
     if (loading) {
@@ -107,7 +118,7 @@ const ProductDetails = () =>{
                             {isProductInCart ? "Remove From Cart" : "Add To Cart"}  
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity className="px-3 py-1 bg-blue-500 border border-blue-500 rounded-md w-full max-w-[160px]">
+                    <TouchableOpacity className="px-3 py-1 bg-blue-500 border border-blue-500 rounded-md w-full max-w-[160px]" onPress={handleBuyProduct}>
                     <Text className="text-lg font-semibold text-center text-white">
                            Buy Now
                         </Text>
