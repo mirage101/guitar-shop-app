@@ -3,11 +3,17 @@ import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-na
 import { useEffect,useState } from "react";
 import Constants from "expo-constants"
 import {FontAwesome} from "@expo/vector-icons";
+import { useProductContext } from "../../components/ProductContext";
+import { cn } from "../../lib/utils";
+
 const BASE_URL = Constants.expoConfig.extra.BASE_URL;
 const ProductDetails = () =>{
     const {id} = useLocalSearchParams();
+    const {addProductToCart, removeProductFromCart, cartItems} = useProductContext();
     const [product, setProduct] = useState({});
     const [loading, setLoading] = useState(true);
+
+    const isProductInCart = cartItems.some((item) => item.id === product.id);
     const fetchProductDetails = async () => {
        if (!id) return;
 
@@ -38,6 +44,17 @@ const ProductDetails = () =>{
     useEffect(() => {
         fetchProductDetails();
     }, [id]);
+
+    const handleCartItems = () =>{
+        if(isProductInCart) {
+            removeProductFromCart(product.id)
+        }else{
+            addProductToCart({
+                ...product,
+                quantity: 1,
+            });  
+        }        
+    }
 
     if (loading) {
         return (
@@ -85,15 +102,14 @@ const ProductDetails = () =>{
                     <Text className="text-gray-600">{product?.description}</Text>
                 </View>
                 <View className="flex-row mt-5 gap-x-4">
-                    <TouchableOpacity className="px-3 py-1 border border-blue-500 rounded-md w-full max-w-[160px]">
-                        <Text className="text-lg font-semibold text-center text-blue-500">
-                            Add To Cart
+                    <TouchableOpacity onPress={handleCartItems} className={cn("px-3 py-1 border border-blue-500 rounded-md w-full max-w-[160px]", isProductInCart && "border-red-400")}>
+                        <Text className={cn("text-lg font-semibold text-center text-blue-500", isProductInCart && "text-red-500")}>
+                            {isProductInCart ? "Remove From Cart" : "Add To Cart"}  
                         </Text>
-                        
                     </TouchableOpacity>
                     <TouchableOpacity className="px-3 py-1 bg-blue-500 border border-blue-500 rounded-md w-full max-w-[160px]">
                     <Text className="text-lg font-semibold text-center text-white">
-                            Buy Now
+                           Buy Now
                         </Text>
                     </TouchableOpacity>
                 </View>
