@@ -39,7 +39,6 @@ const Login = () => {
             .then((data) => {
                 if (data.token) {
                     SecureStore.setItem("authToken", data.token);
-                    console.log(data.token);
                     Alert.alert("Success", "Login successful.");
                     setUserData(data.data);
                     router.push("/");

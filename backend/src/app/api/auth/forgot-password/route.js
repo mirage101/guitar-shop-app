@@ -1,17 +1,26 @@
 import { prisma } from "@/lib/prisma";
-import { createJWT, verifyPassword } from "@/lib/utils";
+import { hashPassword } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
   try {
     const data = await request.json();
     const email = data?.email?.trim()?.toLowerCase();
-    const password = data?.password;
+    const newPassword = data?.newPassword;
 
-    if (!email || !password) {
+    if (!email || !newPassword) {
       return NextResponse.json(
         {
-          message: "Email and password are required.",
+          message: "Email and new password are required.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (newPassword.length < 8) {
+      return NextResponse.json(
+        {
+          message: "Password must be at least 8 characters long.",
         },
         { status: 400 }
       );
@@ -22,6 +31,7 @@ export async function POST(request) {
         email,
       },
     });
+
     if (!existingCustomer) {
       return NextResponse.json(
         {
@@ -30,25 +40,16 @@ export async function POST(request) {
         { status: 404 }
       );
     }
-    const isValidPassword = await verifyPassword(
-      password,
-      existingCustomer.password
-    );
 
-    if (!isValidPassword) {
-      return NextResponse.json(
-        {
-          message: "Invalid credentials. Please try again.",
-        },
-        { status: 401 }
-      );
-    }
-    const token = await createJWT(existingCustomer);
+    const hashedPassword = await hashPassword(newPassword);
+
+    await prisma.buyerMaster.update({
+      where: { email },
+      data: { password: hashedPassword },
+    });
 
     return NextResponse.json({
-      message: "Login successful.",
-      token,
-      data: existingCustomer,
+      message: "Password updated successfully.",
     });
   } catch (error) {
     return NextResponse.json(
