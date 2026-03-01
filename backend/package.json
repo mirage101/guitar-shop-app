@@ -2,8 +2,8 @@
   "name": "admin",
   "version": "0.1.0",
   "private": true,
-  "license": "UNLICENSED",
-  "author": "inittechlabs",
+  "license": "",
+  "author": "Ivan Filipov",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
@@ -30,7 +30,6 @@
     "react-hot-toast": "^2.4.1",
     "react-redux": "^9.1.2",
     "recharts": "^2.13.0",
-    "stripe": "^18.3.0",
     "tailwind-merge": "^2.4.0",
     "yup": "^1.4.0"
   },

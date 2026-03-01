@@ -9,7 +9,7 @@ import { useUserContext } from "../../components/UserContext";
 const BASE_URL = Constants.expoConfig.extra.BASE_URL;
 
 const Register = () => {
-    const {setUserData} = useUserContext();
+    const { setUserData } = useUserContext();
     const [inputData, setInputData] = useState({
         name: "",
         email: "",
@@ -45,14 +45,13 @@ const Register = () => {
         })
             .then((response) => response.json())
             .then((data) => {
-                if(data.token){
+                if (data.token) {
                     SecureStore.setItem("authToken", data.token);
                     setUserData(data.data);
-                    console.log(data.token);
                     Alert.alert("Success", "Registration successful.");
-                    router.push("/");
-                }else{
-                     Alert.alert("Error", data.message);
+                    router.push("/")
+                } else {
+                    Alert.alert("Error", data.message);
                 }
             })
             .catch((error) => console.log(error))
@@ -94,7 +93,7 @@ const Register = () => {
                         />
                     </View>
                     <TouchableOpacity className="py-3 bg-blue-600 rounded-lg" onPress={handleSubmit}>
-                        {loading ? <ActivityIndicator /> : (
+                        {loading ? <ActivityIndicator color="white" /> : (
                             <Text className="font-semibold text-center text-white">
                                 Submit
                             </Text>

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import Constants from "expo-constants";
-import * as SecureStore from "expo-secure-store";
+import { getToken } from "../lib/authStorage";
 
 const BASE_URL = Constants.expoConfig.extra.BASE_URL;
 
@@ -8,9 +8,8 @@ const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
     const [userData, setUserData] = useState();
-    const token = SecureStore.getItem("authToken");
 
-    const getUserData = () => {
+    const getUserData = (token) => {
         if (!token) {
             return;
         }
@@ -27,7 +26,16 @@ export const UserProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        getUserData();
+        const loadUserData = async () => {
+            try {
+                const token = await getToken();
+                getUserData(token);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        loadUserData();
     }, [])
     return (
         <UserContext.Provider value={{ userData, setUserData }}>

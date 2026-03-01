@@ -45,6 +45,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 10;
   const [filters, setFilters] = useState({
     search: ""
   })
@@ -58,16 +61,17 @@ export default function App() {
       setError('');
       const baseUrls = getCandidateBaseUrls();
       let lastErrorMessage = 'Unable to load products';
-      const params = new URLSearchParams();
-      if (debouncedSearch?.trim()) {
-        params.set('search', debouncedSearch.trim());
-      }
-      const queryString = params.toString();
+      const queryString = objectToQueryString({
+        ...filters,
+        search: debouncedSearch,
+        page: currentPage,
+        limit: pageSize,
+      });
 
       for (const baseUrl of baseUrls) {
         try {
           const response = await fetch(
-            `${baseUrl}/api/products${objectToQueryString(filters)? `?${objectToQueryString(filters)}` : ''}`
+            `${baseUrl}/api/products${queryString ? `?${queryString}` : ''}`
           );
           console.log('response:', response)
           if (!response.ok) {
@@ -77,6 +81,7 @@ export default function App() {
 
           const data = await response.json();
           setProducts(data?.data ?? []);
+          setTotalPages(Math.max(1, data?.meta?.totalPages || 1));
           setActiveBaseUrl(baseUrl);
           return;
         } catch (networkError) {
@@ -99,6 +104,7 @@ export default function App() {
   useEffect(()=>{
     const timeoutId = setTimeout(() => {
       setDebouncedSearch(filters.search);
+      setCurrentPage(1);
     }, 300);
 
     return () => clearTimeout(timeoutId);
@@ -106,10 +112,11 @@ export default function App() {
 
   useEffect(()=>{
     fetchProductData()
-  }, [debouncedSearch]);
+  }, [debouncedSearch, currentPage, filters.productTypeId, filters.sortBy, filters.minPrice, filters.maxPrice, filters.rating, filters.inStock]);
   console.log(filters);
   const filterHandler = (filterData) => {
     setFilters((prev) => ({...prev, ...filterData}))
+    setCurrentPage(1);
   }
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -121,7 +128,7 @@ export default function App() {
               className="px-4 py-2 pl-8 border border-gray-300 rounded-md" 
               placeholder="Search..."
               value={filters.search}
-              onChangeText={(text) => setFilters({search: text})}
+              onChangeText={(text) => setFilters((prev) => ({...prev, search: text}))}
             />
           </View>
           <TouchableOpacity onPress={toggleFilterModal} className="px-3 py-1 border border-blue-500 rounded-md">
@@ -139,6 +146,29 @@ export default function App() {
           renderItem={({ item }) => (
             <ProductCard product={item} backendBaseUrl={activeBaseUrl} />
           )}
+          ListFooterComponent={
+           products.length > 6 ? (<View className="flex-row items-center justify-center gap-4 mt-6">
+              <TouchableOpacity
+                className="px-4 py-2 bg-gray-200 rounded-md"
+                disabled={currentPage === 1}
+                onPress={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              >
+                <Text className="font-semibold text-gray-700">Previous</Text>
+              </TouchableOpacity>
+
+              <Text className="font-semibold text-gray-700">
+                Page {currentPage} of {totalPages}
+              </Text>
+
+              <TouchableOpacity
+                className="px-4 py-2 bg-gray-200 rounded-md"
+                disabled={currentPage >= totalPages}
+                onPress={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              >
+                <Text className="font-semibold text-gray-700">Next</Text>
+              </TouchableOpacity>
+            </View>) : ""
+          }
           keyExtractor={(item) => String(item.id)}
           numColumns={2}
         />

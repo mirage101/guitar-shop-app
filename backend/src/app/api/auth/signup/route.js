@@ -5,9 +5,22 @@ import { NextResponse } from "next/server";
 export async function POST(request) {
   try {
     const data = await request.json();
+    const name = data?.name?.trim();
+    const email = data?.email?.trim()?.toLowerCase();
+    const password = data?.password;
+
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        {
+          message: "Name, email and password are required.",
+        },
+        { status: 400 }
+      );
+    }
+
     const existingCustomer = await prisma.buyerMaster.findUnique({
       where: {
-        email: data.email,
+        email,
       },
     });
 
@@ -20,12 +33,12 @@ export async function POST(request) {
       );
     }
     // Hash the password
-    const hashedPassword = await hashPassword(data.password);
+    const hashedPassword = await hashPassword(password);
     // Create the new user
     const newUser = await prisma.buyerMaster.create({
       data: {
-        customerName: data.name,
-        email: data.email,
+        customerName: name,
+        email,
         password: hashedPassword,
       },
     });

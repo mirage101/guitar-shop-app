@@ -1,27 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
 const jsonResponse = (body, init = {}) =>
   NextResponse.json(body, {
     ...init,
-    headers: {
-      ...CORS_HEADERS,
-      ...(init.headers || {}),
-    },
+    headers: init.headers || {},
   });
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: CORS_HEADERS,
-  });
-}
 
 export async function POST(request) {
   try {
@@ -78,6 +62,12 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
+    const page = Number(searchParams.get("page") || 1);
+    const limit = Number(searchParams.get("limit") || 10);
+    const safePage = Number.isFinite(page) && page > 0 ? page : 1;
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 10;
+    const skip = (safePage - 1) * safeLimit;
+
     const filters = {
       productTypeId: searchParams.get("productTypeId"),
       sortBy: searchParams.get("sortBy"),
@@ -130,12 +120,18 @@ export async function GET(request) {
           : {}),
     };
 
+    const where = { ...whereClause, isActive: true };
+
+    const totalItems = await prisma.product.count({
+      where,
+    });
+
     // Get products
     const products = await prisma.product.findMany({
       include: {
         productType: true,
       },
-      where: { ...whereClause, isActive: true },
+      where,
       orderBy: {
         sellPrice:
           filters.sortBy === "sellPrice"
@@ -144,9 +140,22 @@ export async function GET(request) {
               ? "desc"
               : undefined,
       },
+      skip,
+      take: safeLimit,
     });
 
-    return jsonResponse({ status: true, data: products });
+    const totalPages = Math.max(1, Math.ceil(totalItems / safeLimit));
+
+    return jsonResponse({
+      status: true,
+      data: products,
+      meta: {
+        page: safePage,
+        limit: safeLimit,
+        totalItems,
+        totalPages,
+      },
+    });
   } catch (error) {
     return jsonResponse(
       {
