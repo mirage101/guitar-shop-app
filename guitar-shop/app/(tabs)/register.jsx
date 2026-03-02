@@ -2,11 +2,10 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context";
-import Constants from "expo-constants";
-import * as SecureStore from "expo-secure-store";
 import { useUserContext } from "../../components/UserContext";
-
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "../../lib/firebase";
+import { setToken } from "../../lib/authStorage";
 
 const Register = () => {
     const { setUserData } = useUserContext();
@@ -21,7 +20,7 @@ const Register = () => {
         setInputData((prev) => ({ ...prev, [key]: value }));
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const { name, email, password } = inputData;
 
         if (!name || !email || !password) {
@@ -36,26 +35,34 @@ const Register = () => {
 
         setLoading(true);
 
-        fetch(`${BASE_URL}/api/auth/signup`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(inputData)
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.token) {
-                    SecureStore.setItem("authToken", data.token);
-                    setUserData(data.data);
-                    Alert.alert("Success", "Registration successful.");
-                    router.push("/")
-                } else {
-                    Alert.alert("Error", data.message);
-                }
-            })
-            .catch((error) => console.log(error))
-            .finally(() => setLoading(false));
+        try {
+            const credentials = await createUserWithEmailAndPassword(auth, email.trim(), password);
+            await updateProfile(credentials.user, { displayName: name.trim() });
+            const token = await credentials.user.getIdToken();
+
+            await setToken(token);
+            setUserData({
+                id: credentials.user.uid,
+                email: credentials.user.email,
+                customerName: name.trim(),
+            });
+
+            Alert.alert("Success", "Registration successful.");
+            router.push("/")
+        } catch (error) {
+            const message =
+                error?.code === "auth/email-already-in-use"
+                    ? "Email is already in use."
+                    : error?.code === "auth/invalid-email"
+                        ? "Please enter a valid email address."
+                        : error?.code === "auth/weak-password"
+                            ? "Password is too weak."
+                            : error?.message || "Registration failed.";
+
+            Alert.alert("Error", message);
+        } finally {
+            setLoading(false);
+        }
 
     }
     return (

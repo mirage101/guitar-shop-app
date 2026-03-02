@@ -1,13 +1,11 @@
 import { useLocalSearchParams, router } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useEffect,useState } from "react";
-import Constants from "expo-constants"
 import {FontAwesome} from "@expo/vector-icons";
 import { useProductContext } from "../../components/ProductContext";
 import { cn } from "../../lib/utils";
+import { findProductById } from "../../lib/firebaseProducts";
 
-
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
 const ProductDetails = () =>{
     const {id} = useLocalSearchParams();
     const {addProductToCart, removeProductFromCart, cartItems, setCartItems} = useProductContext();
@@ -19,18 +17,10 @@ const ProductDetails = () =>{
        if (!id) return;
 
        try {
-            const response = await fetch(`${BASE_URL}/api/products/${id}`);
-           const data = await response.json();
-
-            if (!response.ok) {
-                console.log("Fetch failed:", response.status, data);                
-                return;
-            }
-
-            setProduct(data?.data || {});
-            console.log(data);
+            const fetchedProduct = await findProductById(id);
+            setProduct(fetchedProduct || {});
        } catch (error) {
-            console.log("Network error:", error);
+            console.log("Product fetch error:", error);
        }finally{
         setLoading(false)
        };
@@ -39,7 +29,7 @@ const ProductDetails = () =>{
     const imageUri = product?.image
         ? product.image.startsWith("http")
             ? product.image
-            : `${BASE_URL}${product.image}`
+            : product.image
         : undefined;
 
     useEffect(() => {
@@ -67,6 +57,8 @@ const ProductDetails = () =>{
         router.push("/cart");
     }
 
+    const ratingStars = Math.max(0, Math.floor(Number(product?.rating || 0)));
+
     if (loading) {
         return (
             <View className="items-center justify-center flex-1">
@@ -90,7 +82,7 @@ const ProductDetails = () =>{
                     {product?.name}
                 </Text>
                 <View className="flex-row items-center gap-1">
-                    {[...Array(product?.rating)].map((_,index)=>(
+                    {[...Array(ratingStars)].map((_,index)=>(
                     <FontAwesome name="star" size={16} color="#FFD700" key={index}/>
                     ))}
                 </View>

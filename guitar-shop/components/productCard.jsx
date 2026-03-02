@@ -1,13 +1,8 @@
 import { useState } from "react";
 import {Image, Text, TouchableOpacity, View} from "react-native";
-import Constants from "expo-constants";
 import {router} from "expo-router";
 
-const configuredBaseUrl = Constants.expoConfig?.extra?.BASE_URL;
-const trimTrailingSlash = (url) => url?.replace(/\/+$/, '');
-const isAbsoluteUrl = (url) => /^https?:\/\//i.test(url || '');
-
-const ProductCard = ({product, backendBaseUrl}) => {
+const ProductCard = ({product}) => {
     const [imageFailed, setImageFailed] = useState(false);
 
     if (!product) {
@@ -18,16 +13,7 @@ const ProductCard = ({product, backendBaseUrl}) => {
         );
     }
 
-    const baseUrl = trimTrailingSlash(backendBaseUrl || configuredBaseUrl);
-    const imagePath = product?.image || '';
-    const normalizedImagePath = imagePath
-        ? imagePath.startsWith('/')
-            ? imagePath
-            : `/${imagePath}`
-        : '';
-    const imageUrl = isAbsoluteUrl(imagePath)
-        ? imagePath
-        : `${baseUrl}${normalizedImagePath}`;
+    const imageUrl = product?.image || '';
 
     return (
         <View className="w-1/2 p-8">

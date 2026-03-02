@@ -12,6 +12,19 @@ const Cart = () => {
     const { userData } = useUserContext();
     const { cartItems, increaseQuantity, decreaseQuantity, totalAmount } = useProductContext();
 
+    const getImageUri = (imagePath) => {
+        if (!imagePath) {
+            return undefined;
+        }
+
+        if (/^https?:\/\//i.test(imagePath)) {
+            return imagePath;
+        }
+
+        const normalizedPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+        return `${BASE_URL}${normalizedPath}`;
+    };
+
     const handleCheckout = () => {
         if (userData) {
             router.push("/checkout");
@@ -19,6 +32,8 @@ const Cart = () => {
             router.push("/login");
         }
     }
+
+    const getRatingStars = (rating) => Math.max(0, Math.floor(Number(rating || 0)));
     return (
         <SafeAreaView className="flex-1 p-8 bg-white">
             <Text className="mb-4 text-3xl font-semibold">Cart</Text>
@@ -28,7 +43,7 @@ const Cart = () => {
                     key={product.id}
                 >
                     <Image
-                        source={{ uri: `${BASE_URL}${product?.image}` }}
+                        source={{ uri: getImageUri(product?.image) }}
                         className="w-32 h-32"
                         resizeMode="cover"
                     />
@@ -40,7 +55,7 @@ const Cart = () => {
                             </Text>
                         </View>
                         <View className="flex-row items-center gap-1">
-                            {[...Array(product?.rating)].map((_, index) => (
+                            {[...Array(getRatingStars(product?.rating))].map((_, index) => (
                                 <FontAwesome
                                     name="star"
                                     size={16}

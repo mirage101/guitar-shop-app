@@ -2,12 +2,10 @@ import { useState } from "react";
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import Constants from "expo-constants";
 import { useProductContext } from "../components/ProductContext";
 import { useUserContext } from "../components/UserContext";
-import { getToken } from "../lib/authStorage";
-
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 const Checkout = () => {
   const { userData } = useUserContext();
@@ -34,46 +32,35 @@ const Checkout = () => {
       return;
     }
 
-    const token = await getToken();
-
-    if (!token) {
-      Alert.alert("Error", "Session expired. Please login again.");
-      router.push("/login");
-      return;
-    }
-
     setLoading(true);
 
     try {
+      const salesTransactions = cartItems.map((item) => ({
+        productId: item.id,
+        productName: item.name,
+        qtyPurchased: item.quantity,
+        unitPrice: Number(item.sellPrice),
+        total: Number((item.quantity * item.sellPrice).toFixed(2)),
+      }));
+
       const payload = {
+        customerName: userData.customerName,
         customerId: userData.id,
         customerEmail: userData.email,
-        SODateTime: Date.now() / 1000,
+        SODateTime: Date.now(),
         grandTotalPrice: Number(totalAmount.toFixed(2)),
         paymentMode: "cash_on_delivery",
         address: address.trim(),
         city: city.trim(),
-        products: cartItems,
+        salesTransactions,
+        status: "pending",
+        createdAt: serverTimestamp(),
       };
 
-      const response = await fetch(`${BASE_URL}/api/checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        Alert.alert("Error", data?.message || "Checkout failed.");
-        return;
-      }
+      await addDoc(collection(db, "orders"), payload);
 
       setCartItems([]);
-      Alert.alert("Success", data?.message || "Order placed successfully.", [
+      Alert.alert("Success", "Order placed successfully.", [
         {
           text: "View My Orders",
           onPress: () => router.push("/orders"),

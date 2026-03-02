@@ -2,70 +2,36 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Constants from "expo-constants";
-
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../../lib/firebase";
 
 const ForgotPassword = () => {
-  const [inputData, setInputData] = useState({
-    email: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (key, value) => {
-    setInputData((prev) => ({ ...prev, [key]: value }));
-  };
-
   const handleSubmit = async () => {
-    const email = inputData.email.trim().toLowerCase();
-    const newPassword = inputData.newPassword;
-    const confirmPassword = inputData.confirmPassword;
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!email || !newPassword || !confirmPassword) {
-      Alert.alert("Error", "All fields are required.");
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      Alert.alert("Error", "Password must be at least 8 characters long.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
-      return;
-    }
-
-    if (!BASE_URL) {
-      Alert.alert("Error", "Missing API base URL configuration.");
+    if (!normalizedEmail) {
+      Alert.alert("Error", "Email is required.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, newPassword }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        Alert.alert("Error", data?.message || "Unable to reset password.");
-        return;
-      }
-
-      Alert.alert("Success", "Password updated successfully.");
+      await sendPasswordResetEmail(auth, normalizedEmail);
+      Alert.alert("Success", "Password reset email sent. Please check your inbox.");
       router.push("/login");
     } catch (error) {
-      console.log(error);
-      Alert.alert("Error", "Unable to reset password. Please try again.");
+      const message =
+        error?.code === "auth/user-not-found"
+          ? "No account found with this email."
+          : error?.code === "auth/invalid-email"
+            ? "Please enter a valid email address."
+            : error?.message || "Unable to send reset email. Please try again.";
+
+      Alert.alert("Error", message);
     } finally {
       setLoading(false);
     }
@@ -82,30 +48,8 @@ const ForgotPassword = () => {
               placeholder="Enter your Email"
               className="px-4 py-3 border border-gray-300 rounded-lg"
               autoCapitalize="none"
-              onChangeText={(text) => handleInputChange("email", text)}
-              value={inputData.email}
-            />
-          </View>
-
-          <View className="flex-col gap-2">
-            <Text className="text-base font-medium text-gray-700">New Password</Text>
-            <TextInput
-              placeholder="Enter your new Password"
-              className="px-4 py-3 border border-gray-300 rounded-lg"
-              secureTextEntry
-              onChangeText={(text) => handleInputChange("newPassword", text)}
-              value={inputData.newPassword}
-            />
-          </View>
-
-          <View className="flex-col gap-2">
-            <Text className="text-base font-medium text-gray-700">Confirm Password</Text>
-            <TextInput
-              placeholder="Confirm your new Password"
-              className="px-4 py-3 border border-gray-300 rounded-lg"
-              secureTextEntry
-              onChangeText={(text) => handleInputChange("confirmPassword", text)}
-              value={inputData.confirmPassword}
+              onChangeText={setEmail}
+              value={email}
             />
           </View>
 
@@ -113,7 +57,7 @@ const ForgotPassword = () => {
             {loading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="font-semibold text-center text-white">Reset Password</Text>
+              <Text className="font-semibold text-center text-white">Send Reset Email</Text>
             )}
           </TouchableOpacity>
 

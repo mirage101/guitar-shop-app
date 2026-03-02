@@ -18,6 +18,10 @@ yarn-error.log*
 .env.*
 !.env.example
 
+# Firebase service account credentials
+serviceAccountKey.json
+*.service-account.json
+
 # Prisma local database
 prisma/*.db
 prisma/*.db-journal
@@ -26,3 +30,5 @@ prisma/*.db-journal
 .DS_Store
 Thumbs.db
 .vscode/
+
+serviceAccountKey.json.json

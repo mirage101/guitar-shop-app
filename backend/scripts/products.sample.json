@@ -1,0 +1,238 @@
+[
+    {
+        "name":  "Yamaha F310 Acoustic Guitar",
+        "description":  "Beginner-friendly full-size acoustic guitar.",
+        "sellPrice":  219,
+        "image":  "/uploads/yamaha-f310.jpg",
+        "productType":  "acoustic guitars",
+        "currentStock":  12,
+        "rating":  4.5,
+        "isActive":  true
+    },
+    {
+        "name":  "Ibanez GRX40 Electric Guitar",
+        "description":  "Versatile electric guitar for rock and blues.",
+        "mrp":  420,
+        "sellPrice":  369,
+        "image":  "/uploads/ibanez-grx40.jpg",
+        "productType":  "electric guitars",
+        "currentStock":  8,
+        "rating":  4.3,
+        "isActive":  true
+    },
+    {
+        "name":  "Kala KA-15S Ukulele",
+        "description":  "Soprano ukulele with warm tone and easy playability.",
+        "mrp":  140,
+        "sellPrice":  119,
+        "image":  "/uploads/kala-ka15s.jpg",
+        "productType":  "ukulele",
+        "currentStock":  15,
+        "rating":  4.6,
+        "isActive":  true
+    },
+    {
+        "name":  "Fender FA-125 Acoustic Guitar",
+        "description":  "Comfortable dreadnought acoustic with bright tone.",
+        "mrp":  310,
+        "sellPrice":  269,
+        "image":  "/uploads/fender-fa125.jpg",
+        "productType":  "acoustic guitars",
+        "currentStock":  10,
+        "rating":  4.4,
+        "isActive":  true
+    },
+    {
+        "name":  "Cort AD810 Acoustic Guitar",
+        "description":  "Solid beginner acoustic with balanced projection.",
+        "sellPrice":  205,
+        "image":  "/uploads/cort-ad810.jpg",
+        "productType":  "acoustic guitars",
+        "currentStock":  14,
+        "rating":  4.2,
+        "isActive":  true
+    },
+    {
+        "name":  "Squier Bullet Stratocaster",
+        "description":  "Classic Strat style electric for versatile tones.",
+        "mrp":  380,
+        "sellPrice":  339,
+        "image":  "/uploads/squier-bullet-strat.jpg",
+        "productType":  "electric guitars",
+        "currentStock":  9,
+        "rating":  4.3,
+        "isActive":  true
+    },
+    {
+        "name":  "Epiphone Les Paul Studio",
+        "description":  "Single-cut electric with warm sustain and punch.",
+        "mrp":  540,
+        "sellPrice":  489,
+        "image":  "/uploads/epiphone-les-paul-studio.jpg",
+        "productType":  "electric guitars",
+        "currentStock":  6,
+        "rating":  4.5,
+        "isActive":  true
+    },
+    {
+        "name":  "Jackson JS11 Dinky",
+        "description":  "Fast neck electric guitar suited for heavier genres.",
+        "mrp":  360,
+        "sellPrice":  319,
+        "image":  "/uploads/jackson-js11.jpg",
+        "productType":  "electric guitars",
+        "currentStock":  7,
+        "rating":  4.1,
+        "isActive":  true
+    },
+    {
+        "name":  "Yamaha C40 Classical Guitar",
+        "description":  "Nylon-string classical with mellow and warm response.",
+        "sellPrice":  199,
+        "image":  "/uploads/yamaha-c40.jpg",
+        "productType":  "classical guitars",
+        "currentStock":  11,
+        "rating":  4.6,
+        "isActive":  true
+    },
+    {
+        "name":  "Cordoba C1M Classical Guitar",
+        "description":  "Entry-level classical guitar with clean articulation.",
+        "mrp":  270,
+        "sellPrice":  229,
+        "image":  "/uploads/cordoba-c1m.jpg",
+        "productType":  "classical guitars",
+        "currentStock":  8,
+        "rating":  4.4,
+        "isActive":  true
+    },
+    {
+        "name":  "Ibanez GSR180 Bass",
+        "description":  "Lightweight bass guitar with deep low-end clarity.",
+        "mrp":  420,
+        "sellPrice":  365,
+        "image":  "/uploads/ibanez-gsr180.jpg",
+        "productType":  "bass guitars",
+        "currentStock":  6,
+        "rating":  4.3,
+        "isActive":  true
+    },
+    {
+        "name":  "Yamaha TRBX174 Bass",
+        "description":  "Reliable 4-string bass for practice and stage use.",
+        "mrp":  460,
+        "sellPrice":  409,
+        "image":  "/uploads/yamaha-trbx174.jpg",
+        "productType":  "bass guitars",
+        "currentStock":  5,
+        "rating":  4.5,
+        "isActive":  true
+    },
+    {
+        "name":  "Fender Rumble Bass Pack",
+        "description":  "Starter bass setup with playable neck and punchy output.",
+        "sellPrice":  449,
+        "image":  "/uploads/fender-rumble-bass-pack.jpg",
+        "productType":  "bass guitars",
+        "currentStock":  4,
+        "rating":  4.2,
+        "isActive":  true
+    },
+    {
+        "name":  "Enya Nova U Soprano Ukulele",
+        "description":  "Carbon-fiber ukulele with stable tuning and bright tone.",
+        "mrp":  190,
+        "sellPrice":  165,
+        "image":  "/uploads/enya-nova-u.jpg",
+        "productType":  "ukulele",
+        "currentStock":  13,
+        "rating":  4.7,
+        "isActive":  true
+    },
+    {
+        "name":  "Mahalo MR1 Rainbow Ukulele",
+        "description":  "Affordable soprano ukulele for first-time players.",
+        "mrp":  95,
+        "sellPrice":  79,
+        "image":  "/uploads/mahalo-mr1.jpg",
+        "productType":  "ukulele",
+        "currentStock":  18,
+        "rating":  4.0,
+        "isActive":  true
+    },
+    {
+        "name":  "Martin LX1 Little Martin",
+        "description":  "Compact premium acoustic with rich projection.",
+        "mrp":  690,
+        "sellPrice":  629,
+        "image":  "/uploads/martin-lx1.jpg",
+        "productType":  "luthier instruments",
+        "currentStock":  3,
+        "rating":  4.8,
+        "isActive":  true
+    },
+    {
+        "name":  "Taylor Academy 12e",
+        "description":  "Comfort-oriented premium acoustic for fingerstyle and strumming.",
+        "sellPrice":  849,
+        "image":  "/uploads/taylor-academy-12e.jpg",
+        "productType":  "luthier instruments",
+        "currentStock":  2,
+        "rating":  4.9,
+        "isActive":  true
+    },
+    {
+        "name":  "PRS SE Custom 24",
+        "description":  "Premium electric with versatile pickup switching.",
+        "mrp":  960,
+        "sellPrice":  899,
+        "image":  "/uploads/prs-se-custom-24.jpg",
+        "productType":  "luthier instruments",
+        "currentStock":  3,
+        "rating":  4.8,
+        "isActive":  true
+    },
+    {
+        "name":  "Takamine GD20 Acoustic Guitar",
+        "description":  "Acoustic dreadnought with warm mids and clear highs.",
+        "mrp":  430,
+        "sellPrice":  389,
+        "image":  "/uploads/takamine-gd20.jpg",
+        "productType":  "acoustic guitars",
+        "currentStock":  7,
+        "rating":  4.4,
+        "isActive":  true
+    },
+    {
+        "name":  "Schecter C-6 Deluxe",
+        "description":  "Modern electric with comfortable contour and sustain.",
+        "mrp":  520,
+        "sellPrice":  469,
+        "image":  "/uploads/schecter-c6-deluxe.jpg",
+        "productType":  "electric guitars",
+        "currentStock":  5,
+        "rating":  4.3,
+        "isActive":  true
+    },
+    {
+        "name":  "Ortega R121 Classical Guitar",
+        "description":  "Classical guitar with smooth nylon response and comfort neck.",
+        "sellPrice":  279,
+        "image":  "/uploads/ortega-r121.jpg",
+        "productType":  "classical guitars",
+        "currentStock":  6,
+        "rating":  4.2,
+        "isActive":  true
+    },
+    {
+        "name":  "Gretsch G2220 Junior Jet Bass",
+        "description":  "Short-scale bass with punchy vintage-inspired tone.",
+        "mrp":  480,
+        "sellPrice":  429,
+        "image":  "/uploads/gretsch-g2220.jpg",
+        "productType":  "bass guitars",
+        "currentStock":  4,
+        "rating":  4.4,
+        "isActive":  true
+    }
+]
