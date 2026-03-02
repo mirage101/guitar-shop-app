@@ -30,3 +30,5 @@ prisma/*.db-journal
 .DS_Store
 Thumbs.db
 .vscode/
+
+serviceAccountKey.json.json
