@@ -1,10 +1,9 @@
 
 import {TouchableOpacity, Modal, Text, View, Pressable} from "react-native";
-import Constants from "expo-constants";
 import { useEffect, useState } from "react";
 import { cn } from "../lib/utils";
+import { fetchProductTypeOptions } from "../lib/firebaseProducts";
 
-const configuredBaseUrl = Constants.expoConfig?.extra?.BASE_URL;
 const CategoryOptions=[
     {value:'all', label: 'All'},
     {value:'acoustic guitars', label: 'Acoustic Guitars'},
@@ -36,7 +35,7 @@ const AvailabilityOptions = [
     {value: "false", label: "Out of Stock"},
 ]
 const FilterModal = ({openFilterModal, toggleFilterModal, filterHandler}) =>{
-    const [productTypes, setProductsTypes] = useState([])
+    const [productTypes, setProductsTypes] = useState(CategoryOptions)
     const [filters, setFilters] = useState({
         productTypeId: "all",
         sortBy: "all",
@@ -51,30 +50,14 @@ const FilterModal = ({openFilterModal, toggleFilterModal, filterHandler}) =>{
         }));
     }
     const fetchProductTypes = async () => {
-  try {
-    console.log("BASE_URL:", configuredBaseUrl);
-
-    const res = await fetch(`${configuredBaseUrl}/api/products/product-type`);
-    console.log("status:", res.status);
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`HTTP ${res.status} - ${text}`);
-    }
-
-    const data = await res.json();
-    const modifiedData = (data?.data || []).map((item) => ({
-      label: item.name,
-      value: item.id,
-    }));
-
-    setProductsTypes([{ value: "all", label: "All" }, ...modifiedData]);
-  } catch (error) {
-    console.log("fetchProductTypes error:", error);
-  }
+                try {
+                        const productTypeOptions = await fetchProductTypeOptions();
+                        setProductsTypes(productTypeOptions.length ? productTypeOptions : CategoryOptions);
+                } catch (error) {
+                        console.log("fetchProductTypes error:", error);
+                        setProductsTypes(CategoryOptions);
+                }
 };
-
-console.log(filters)
 
     useEffect(() => {
         fetchProductTypes();
@@ -92,6 +75,12 @@ console.log(filters)
             rating: "all",
             inStock: "all"
         })
+        filterHandler({
+            productTypeId: "all",
+            sortBy:"all",
+            rating: "all",
+            inStock: "all"
+        });
     }
     return (
         <Modal visible={openFilterModal} transparent={true} onRequestClose={toggleFilterModal} animationType="slide">

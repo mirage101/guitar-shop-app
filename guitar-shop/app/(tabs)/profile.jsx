@@ -4,11 +4,14 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useUserContext } from "../../components/UserContext";
 import { router } from "expo-router";
 import { removeToken } from "../../lib/authStorage";
+import { signOut } from "firebase/auth";
+import { auth } from "../../lib/firebase";
 
 const Profile = () => {
     const { userData, setUserData } = useUserContext();
 
     const handleLogout = async () => {
+        await signOut(auth);
         setUserData(null);
         await removeToken();
         router.push("/")

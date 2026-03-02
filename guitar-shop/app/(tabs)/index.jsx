@@ -1,47 +1,13 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Constants from "expo-constants";
 import ProductCard from '../../components/productCard';
 import {FontAwesome} from "@expo/vector-icons";
 import FilterModal from '../../components/FilterModal';
-import { objectToQueryString } from '../../lib/utils';
-const configuredBaseUrl = Constants.expoConfig?.extra?.BASE_URL;
-
-const trimTrailingSlash = (url) => url?.replace(/\/+$/, '');
-
-const getCandidateBaseUrls = () => {
-  const expoHostUri =
-    Constants.expoConfig?.hostUri ||
-    Constants.manifest2?.extra?.expoClient?.hostUri;
-  const debuggerHost =
-    Constants.expoConfig?.extra?.expoGo?.debuggerHost ||
-    Constants.expoGoConfig?.debuggerHost;
-
-  const hosts = [
-    expoHostUri?.split(':')[0],
-    debuggerHost?.split(':')[0],
-  ].filter(Boolean);
-
-  const platformFallbacks =
-    Platform.OS === 'android'
-      ? ['http://10.0.2.2:3001', 'http://127.0.0.1:3001', 'http://localhost:3001']
-      : Platform.OS === 'ios'
-        ? ['http://127.0.0.1:3001', 'http://localhost:3001']
-        : ['http://localhost:3001', 'http://127.0.0.1:3001'];
-
-  const candidateBaseUrls = [
-    trimTrailingSlash(configuredBaseUrl),
-    ...hosts.map((host) => `http://${host}:3001`),
-    ...platformFallbacks,
-  ].filter(Boolean);
-
-  return [...new Set(candidateBaseUrls)];
-};
+import { fetchAllProducts } from '../../lib/firebaseProducts';
 
 export default function App() {
   const [products, setProducts] = useState([]);
-  const [activeBaseUrl, setActiveBaseUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -49,7 +15,11 @@ export default function App() {
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 10;
   const [filters, setFilters] = useState({
-    search: ""
+    search: "",
+    productTypeId: "all",
+    sortBy: "all",
+    rating: "all",
+    inStock: "all"
   })
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const toggleFilterModal = () => {
@@ -59,39 +29,71 @@ export default function App() {
     try {
       setLoading(true);
       setError('');
-      const baseUrls = getCandidateBaseUrls();
-      let lastErrorMessage = 'Unable to load products';
-      const queryString = objectToQueryString({
-        ...filters,
-        search: debouncedSearch,
-        page: currentPage,
-        limit: pageSize,
-      });
+      const allProducts = await fetchAllProducts();
 
-      for (const baseUrl of baseUrls) {
-        try {
-          const response = await fetch(
-            `${baseUrl}/api/products${queryString ? `?${queryString}` : ''}`
-          );
-          console.log('response:', response)
-          if (!response.ok) {
-            lastErrorMessage = `Request failed with status ${response.status}`;
-            continue;
+      const filteredProducts = allProducts
+        .filter((product) => {
+          if (!debouncedSearch) {
+            return true;
           }
 
-          const data = await response.json();
-          setProducts(data?.data ?? []);
-          setTotalPages(Math.max(1, data?.meta?.totalPages || 1));
-          setActiveBaseUrl(baseUrl);
-          return;
-        } catch (networkError) {
-          lastErrorMessage = networkError?.message || 'Network request failed';
-        }
+          const normalizedSearch = debouncedSearch.toLowerCase();
+          return (
+            product?.name?.toLowerCase().includes(normalizedSearch) ||
+            product?.description?.toLowerCase().includes(normalizedSearch)
+          );
+        })
+        .filter((product) => {
+          if (filters.productTypeId === "all") {
+            return true;
+          }
+
+          const typeId = String(product?.productType?.id ?? product?.productTypeId ?? "");
+          const typeName = String(product?.productType?.name ?? "").toLowerCase();
+          const selectedType = String(filters.productTypeId).toLowerCase();
+
+          return typeId === String(filters.productTypeId) || typeName === selectedType;
+        })
+        .filter((product) => {
+          if (filters.rating === "all") {
+            return true;
+          }
+
+          return Number(product?.rating ?? 0) >= Number(filters.rating);
+        })
+        .filter((product) => {
+          if (filters.inStock === "all") {
+            return true;
+          }
+
+          if (filters.inStock === "true") {
+            return Number(product?.currentStock ?? 0) > 0;
+          }
+
+          return Number(product?.currentStock ?? 0) <= 0;
+        })
+        .sort((firstProduct, secondProduct) => {
+          if (filters.sortBy === "sellPrice") {
+            return Number(firstProduct.sellPrice) - Number(secondProduct.sellPrice);
+          }
+
+          if (filters.sortBy === "-sellPrice") {
+            return Number(secondProduct.sellPrice) - Number(firstProduct.sellPrice);
+          }
+
+          return 0;
+        });
+
+      const calculatedTotalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+      const safePage = Math.min(currentPage, calculatedTotalPages);
+      const startIndex = (safePage - 1) * pageSize;
+
+      if (safePage !== currentPage) {
+        setCurrentPage(safePage);
       }
 
-      throw new Error(
-        `${lastErrorMessage}. Platform: ${Platform.OS}. Tried: ${baseUrls.join(', ')}`
-      );
+      setProducts(filteredProducts.slice(startIndex, startIndex + pageSize));
+      setTotalPages(calculatedTotalPages);
     } catch (fetchError) {
       setError(fetchError?.message || 'Unable to load products');
     } finally {
@@ -113,7 +115,7 @@ export default function App() {
   useEffect(()=>{
     fetchProductData()
   }, [debouncedSearch, currentPage, filters.productTypeId, filters.sortBy, filters.minPrice, filters.maxPrice, filters.rating, filters.inStock]);
-  console.log(filters);
+
   const filterHandler = (filterData) => {
     setFilters((prev) => ({...prev, ...filterData}))
     setCurrentPage(1);
@@ -141,10 +143,10 @@ export default function App() {
           contentContainerStyle={{ paddingBottom: 24 }}
           data={products}
           ListHeaderComponent={
-            <Text className="my-4 text-2xl font-bold text-center">Products</Text>
+            <Text className="my-4 text-2xl font-bold text-center">Our Guitars</Text>
           }
           renderItem={({ item }) => (
-            <ProductCard product={item} backendBaseUrl={activeBaseUrl} />
+            <ProductCard product={item} />
           )}
           ListFooterComponent={
            products.length > 6 ? (<View className="flex-row items-center justify-center gap-4 mt-6">

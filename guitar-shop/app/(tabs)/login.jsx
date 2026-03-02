@@ -2,11 +2,10 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context";
-import Constants from "expo-constants";
-import * as SecureStore from "expo-secure-store"
 import { useUserContext } from "../../components/UserContext";
-
-const BASE_URL = Constants.expoConfig.extra.BASE_URL;
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../lib/firebase";
+import { setToken } from "../../lib/authStorage";
 
 const Login = () => {
     const { setUserData } = useUserContext();
@@ -20,7 +19,7 @@ const Login = () => {
         setInputData((prev) => ({ ...prev, [key]: value }));
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const { email, password } = inputData;
 
         if (!email || !password) {
@@ -28,26 +27,36 @@ const Login = () => {
             return;
         }
 
-        fetch(`${BASE_URL}/api/auth/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(inputData)
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.token) {
-                    SecureStore.setItem("authToken", data.token);
-                    Alert.alert("Success", "Login successful.");
-                    setUserData(data.data);
-                    router.push("/");
-                } else {
-                    Alert.alert("Error", data.message);
-                }
-            })
-            .catch((error) => console.log(error))
-            .finally(() => setLoading(false));
+        setLoading(true);
+
+        try {
+            const credentials = await signInWithEmailAndPassword(auth, email.trim(), password);
+            const token = await credentials.user.getIdToken();
+
+            await setToken(token);
+
+            setUserData({
+                id: credentials.user.uid,
+                email: credentials.user.email,
+                customerName: credentials.user.displayName || credentials.user.email?.split("@")[0] || "Customer",
+            });
+
+            Alert.alert("Success", "Login successful.");
+            router.push("/");
+        } catch (error) {
+            const message =
+                error?.code === "auth/invalid-credential"
+                    ? "Invalid email or password."
+                    : error?.code === "auth/user-not-found"
+                        ? "User not found."
+                        : error?.code === "auth/wrong-password"
+                            ? "Invalid email or password."
+                            : error?.message || "Login failed.";
+
+            Alert.alert("Error", message);
+        } finally {
+            setLoading(false);
+        }
     }
     return (
         <SafeAreaView className="flex-1 py-20 bg-white">
