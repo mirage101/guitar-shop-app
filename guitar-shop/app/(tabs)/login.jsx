@@ -7,23 +7,48 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../lib/firebase";
 import { setToken } from "../../lib/authStorage";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const Login = () => {
     const { setUserData } = useUserContext();
     const [inputData, setInputData] = useState({
         email: "",
         password: ""
     });
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
     const handleInputChange = (key, value) => {
         setInputData((prev) => ({ ...prev, [key]: value }));
+        if (errors[key]) {
+            setErrors((prev) => ({ ...prev, [key]: "" }));
+        }
+    }
+
+    const validateForm = () => {
+        const nextErrors = {};
+        const trimmedEmail = inputData.email.trim();
+
+        if (!trimmedEmail) {
+            nextErrors.email = "Email is required.";
+        } else if (!EMAIL_REGEX.test(trimmedEmail)) {
+            nextErrors.email = "Enter a valid email address.";
+        }
+
+        if (!inputData.password) {
+            nextErrors.password = "Password is required.";
+        } else if (inputData.password.length < 8) {
+            nextErrors.password = "Password must be at least 8 characters.";
+        }
+
+        setErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
     }
 
     const handleSubmit = async () => {
         const { email, password } = inputData;
 
-        if (!email || !password) {
-            Alert.alert("Error", "All fields are required.");
+        if (!validateForm()) {
             return;
         }
 
@@ -69,9 +94,11 @@ const Login = () => {
                             placeholder="Enter your Email"
                             className="px-4 py-3 border border-gray-300 rounded-lg"
                             autoCapitalize="none"
+                            keyboardType="email-address"
                             onChangeText={(text) => handleInputChange("email", text)}
                             value={inputData.email}
                         />
+                        {!!errors.email && <Text className="text-sm text-red-500">{errors.email}</Text>}
                     </View>
                     <View className="flex-col gap-2">
                         <Text className="text-base font-medium text-gray-700">Password</Text>
@@ -82,8 +109,9 @@ const Login = () => {
                             onChangeText={(text) => handleInputChange("password", text)}
                             value={inputData.password}
                         />
+                        {!!errors.password && <Text className="text-sm text-red-500">{errors.password}</Text>}
                     </View>
-                    <TouchableOpacity className="py-3 bg-blue-600 rounded-lg" onPress={handleSubmit}>
+                    <TouchableOpacity className="py-3 bg-blue-600 rounded-lg" onPress={handleSubmit} disabled={loading}>
                         {loading ? <ActivityIndicator color="white" /> : (
                             <Text className="font-semibold text-center text-white">
                                 Submit

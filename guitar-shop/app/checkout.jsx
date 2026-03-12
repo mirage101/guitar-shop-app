@@ -7,12 +7,50 @@ import { useUserContext } from "../components/UserContext";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
+const CITY_REGEX = /^[A-Za-z\s'-]+$/;
+
 const Checkout = () => {
   const { userData } = useUserContext();
   const { cartItems, totalAmount, setCartItems } = useProductContext();
   const [address, setAddress] = useState(userData?.address || "");
   const [city, setCity] = useState(userData?.city || "");
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const handleAddressChange = (value) => {
+    setAddress(value);
+    if (errors.address) {
+      setErrors((prev) => ({ ...prev, address: "" }));
+    }
+  };
+
+  const handleCityChange = (value) => {
+    setCity(value);
+    if (errors.city) {
+      setErrors((prev) => ({ ...prev, city: "" }));
+    }
+  };
+
+  const validateCheckoutForm = () => {
+    const nextErrors = {};
+    const trimmedAddress = address.trim();
+    const trimmedCity = city.trim();
+
+    if (!trimmedAddress) {
+      nextErrors.address = "Address is required.";
+    } else if (trimmedAddress.length < 5) {
+      nextErrors.address = "Address should be at least 5 characters.";
+    }
+
+    if (!trimmedCity) {
+      nextErrors.city = "City is required.";
+    } else if (!CITY_REGEX.test(trimmedCity)) {
+      nextErrors.city = "City can only include letters, spaces, apostrophes, and hyphens.";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
 
   const placeOrder = async () => {
     if (!userData) {
@@ -27,8 +65,7 @@ const Checkout = () => {
       return;
     }
 
-    if (!address.trim() || !city.trim()) {
-      Alert.alert("Error", "Address and city are required.");
+    if (!validateCheckoutForm()) {
       return;
     }
 
@@ -89,8 +126,9 @@ const Checkout = () => {
             placeholder="Enter your address"
             className="px-4 py-3 border border-gray-300 rounded-lg"
             value={address}
-            onChangeText={setAddress}
+            onChangeText={handleAddressChange}
           />
+          {!!errors.address && <Text className="text-sm text-red-500">{errors.address}</Text>}
         </View>
 
         <View className="gap-2">
@@ -99,8 +137,9 @@ const Checkout = () => {
             placeholder="Enter your city"
             className="px-4 py-3 border border-gray-300 rounded-lg"
             value={city}
-            onChangeText={setCity}
+            onChangeText={handleCityChange}
           />
+          {!!errors.city && <Text className="text-sm text-red-500">{errors.city}</Text>}
         </View>
 
         <View className="mt-2">
