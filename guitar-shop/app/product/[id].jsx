@@ -8,7 +8,7 @@ import { findProductById } from "../../lib/firebaseProducts";
 
 const ProductDetails = () =>{
     const {id} = useLocalSearchParams();
-    const {addProductToCart, removeProductFromCart, cartItems, setCartItems} = useProductContext();
+    const {addProductToCart, removeProductFromCart, cartItems} = useProductContext();
     const [product, setProduct] = useState({});
     const [loading, setLoading] = useState(true);
 
@@ -48,12 +48,10 @@ const ProductDetails = () =>{
     }
 
     const handleBuyProduct = () => {
-        setCartItems([
-            {
-                ...product,
-                quantity: 1
-            }
-        ]);
+        addProductToCart({
+            ...product,
+            quantity: 1,
+        });
         router.push("/cart");
     }
 

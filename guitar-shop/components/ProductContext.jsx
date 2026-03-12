@@ -65,7 +65,36 @@ export const ProductProvider = ({ children }) => {
     }, [cartItems, isCartHydrated]);
 
     const addProductToCart = (newProduct) => {
-        setCartItems((prevProducts) => [...prevProducts, newProduct]);
+        if (!newProduct?.id) {
+            return;
+        }
+
+        setCartItems((prevProducts) => {
+            const existingProductIndex = prevProducts.findIndex(
+                (product) => String(product.id) === String(newProduct.id)
+            );
+
+            if (existingProductIndex === -1) {
+                return [
+                    ...prevProducts,
+                    {
+                        ...newProduct,
+                        quantity: Number(newProduct.quantity ?? 1),
+                    },
+                ];
+            }
+
+            return prevProducts.map((product, index) => {
+                if (index !== existingProductIndex) {
+                    return product;
+                }
+
+                return {
+                    ...product,
+                    quantity: Number(product.quantity ?? 0) + Number(newProduct.quantity ?? 1),
+                };
+            });
+        });
     }
 
     const removeProductFromCart = (productId) => {

@@ -7,6 +7,8 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../../lib/firebase";
 import { setToken } from "../../lib/authStorage";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const Register = () => {
     const { setUserData } = useUserContext();
     const [inputData, setInputData] = useState({
@@ -14,22 +16,47 @@ const Register = () => {
         email: "",
         password: ""
     });
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
     const handleInputChange = (key, value) => {
         setInputData((prev) => ({ ...prev, [key]: value }));
+        if (errors[key]) {
+            setErrors((prev) => ({ ...prev, [key]: "" }));
+        }
+    }
+
+    const validateForm = () => {
+        const nextErrors = {};
+        const trimmedName = inputData.name.trim();
+        const trimmedEmail = inputData.email.trim();
+
+        if (!trimmedName) {
+            nextErrors.name = "Name is required.";
+        } else if (trimmedName.length < 2) {
+            nextErrors.name = "Name must be at least 2 characters.";
+        }
+
+        if (!trimmedEmail) {
+            nextErrors.email = "Email is required.";
+        } else if (!EMAIL_REGEX.test(trimmedEmail)) {
+            nextErrors.email = "Enter a valid email address.";
+        }
+
+        if (!inputData.password) {
+            nextErrors.password = "Password is required.";
+        } else if (inputData.password.length < 8) {
+            nextErrors.password = "Password must be at least 8 characters long.";
+        }
+
+        setErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
     }
 
     const handleSubmit = async () => {
         const { name, email, password } = inputData;
 
-        if (!name || !email || !password) {
-            Alert.alert("Error", "All fields are required.")
-            return;
-        }
-
-        if (password.length < 8) {
-            Alert.alert("Error", "Password must be at least 8 characters long.");
+        if (!validateForm()) {
             return;
         }
 
@@ -78,6 +105,7 @@ const Register = () => {
                             onChangeText={(text) => handleInputChange("name", text)}
                             value={inputData.name}
                         />
+                        {!!errors.name && <Text className="text-sm text-red-500">{errors.name}</Text>}
                     </View>
                     <View className="flex-col gap-2">
                         <Text className="text-base font-medium text-gray-700">Email</Text>
@@ -85,9 +113,11 @@ const Register = () => {
                             placeholder="Enter your Email"
                             className="px-4 py-3 border border-gray-300 rounded-lg"
                             autoCapitalize="none"
+                            keyboardType="email-address"
                             onChangeText={(text) => handleInputChange("email", text)}
                             value={inputData.email}
                         />
+                        {!!errors.email && <Text className="text-sm text-red-500">{errors.email}</Text>}
                     </View>
                     <View className="flex-col gap-2">
                         <Text className="text-base font-medium text-gray-700">Password</Text>
@@ -98,8 +128,9 @@ const Register = () => {
                             onChangeText={(text) => handleInputChange("password", text)}
                             value={inputData.password}
                         />
+                        {!!errors.password && <Text className="text-sm text-red-500">{errors.password}</Text>}
                     </View>
-                    <TouchableOpacity className="py-3 bg-blue-600 rounded-lg" onPress={handleSubmit}>
+                    <TouchableOpacity className="py-3 bg-blue-600 rounded-lg" onPress={handleSubmit} disabled={loading}>
                         {loading ? <ActivityIndicator color="white" /> : (
                             <Text className="font-semibold text-center text-white">
                                 Submit

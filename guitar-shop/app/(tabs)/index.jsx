@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductCard from '../../components/productCard';
 import {FontAwesome} from "@expo/vector-icons";
 import FilterModal from '../../components/FilterModal';
-import { fetchAllProducts } from '../../lib/firebaseProducts';
+import { fetchAllProducts, fetchProductTypeOptions } from '../../lib/firebaseProducts';
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -22,9 +22,20 @@ export default function App() {
     inStock: "all"
   })
   const [openFilterModal, setOpenFilterModal] = useState(false);
+  const [productTypeOptions, setProductTypeOptions] = useState([{ value: 'all', label: 'All' }]);
+  const [openTypeDropdown, setOpenTypeDropdown] = useState(false);
   const toggleFilterModal = () => {
     setOpenFilterModal(!openFilterModal);
   }
+
+  const fetchTypeOptions = async () => {
+    try {
+      const options = await fetchProductTypeOptions();
+      setProductTypeOptions(options.length ? options : [{ value: 'all', label: 'All' }]);
+    } catch (typeError) {
+      setProductTypeOptions([{ value: 'all', label: 'All' }]);
+    }
+  };
   const fetchProductData = async () => {
     try {
       setLoading(true);
@@ -116,6 +127,12 @@ export default function App() {
     fetchProductData()
   }, [debouncedSearch, currentPage, filters.productTypeId, filters.sortBy, filters.minPrice, filters.maxPrice, filters.rating, filters.inStock]);
 
+  useEffect(() => {
+    fetchTypeOptions();
+  }, []);
+
+  const selectedTypeLabel = productTypeOptions.find((option) => option.value === filters.productTypeId)?.label || 'All';
+
   const filterHandler = (filterData) => {
     setFilters((prev) => ({...prev, ...filterData}))
     setCurrentPage(1);
@@ -123,17 +140,48 @@ export default function App() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 bg-white">
-        <View className="flex-row items-center w-10/12 gap-2">
-          <View className="relative p-2">
+        {openTypeDropdown ? (
+          <Pressable
+            className="absolute top-0 left-0 right-0 bottom-0 z-10"
+            onPress={() => setOpenTypeDropdown(false)}
+          />
+        ) : null}
+        <View className="px-4 pt-3">
+          <View className="relative w-full">
           <FontAwesome name="search" size={16} color="gray" className="absolute top-4 left-4"/>
             <TextInput 
-              className="px-4 py-2 pl-8 border border-gray-300 rounded-md" 
+              className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-md" 
               placeholder="Search..."
               value={filters.search}
               onChangeText={(text) => setFilters((prev) => ({...prev, search: text}))}
             />
           </View>
-          <TouchableOpacity onPress={toggleFilterModal} className="px-3 py-1 border border-blue-500 rounded-md">
+          <TouchableOpacity
+            onPress={() => setOpenTypeDropdown((prev) => !prev)}
+            className="w-full px-4 py-3 mt-3 border border-gray-300 rounded-md"
+          >
+            <Text className="text-base text-gray-700">Type: {selectedTypeLabel}</Text>
+          </TouchableOpacity>
+
+          {openTypeDropdown ? (
+            <View className="z-20 w-full mt-2 overflow-hidden border border-gray-200 rounded-md bg-gray-50">
+              {productTypeOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  className="px-4 py-3 border-b border-gray-200"
+                  onPress={() => {
+                    setFilters((prev) => ({ ...prev, productTypeId: option.value }));
+                    setCurrentPage(1);
+                    setOpenTypeDropdown(false);
+                  }}
+                >
+                  <Text className="text-gray-700">{option.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : null}
+
+          <TouchableOpacity onPress={toggleFilterModal} className="self-start px-3 py-1 mt-3 border border-blue-500 rounded-md">
             <Text className="text-lg font-semibold text-center text-blue-500">Filter</Text>
           </TouchableOpacity>
         </View>
