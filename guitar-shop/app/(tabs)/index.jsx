@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductCard from '../../components/productCard';
 import {FontAwesome} from "@expo/vector-icons";
@@ -131,6 +131,36 @@ export default function App() {
     fetchTypeOptions();
   }, []);
 
+  const getTypeIconName = (label) => {
+    const normalizedLabel = String(label || "").toLowerCase();
+
+    if (normalizedLabel.includes("all")) {
+      return "th-large";
+    }
+
+    if (normalizedLabel.includes("electric")) {
+      return "bolt";
+    }
+
+    if (normalizedLabel.includes("bass")) {
+      return "headphones";
+    }
+
+    if (normalizedLabel.includes("classical")) {
+      return "book";
+    }
+
+    if (normalizedLabel.includes("ukulele")) {
+      return "smile-o";
+    }
+
+    if (normalizedLabel.includes("luthier")) {
+      return "wrench";
+    }
+
+    return "music";
+  };
+
   const selectedTypeLabel = productTypeOptions.find((option) => option.value === filters.productTypeId)?.label || 'All';
 
   const filterHandler = (filterData) => {
@@ -147,6 +177,62 @@ export default function App() {
           />
         ) : null}
         <View className="px-4 pt-3">
+          <View className="mb-4 overflow-hidden bg-blue-50 rounded-2xl">
+            <Image
+              source={require("../../assets/mrn-logo.png")}
+              className="w-full h-32"
+              resizeMode="cover"
+            />
+          </View>
+
+          <View className="px-1 mb-4">
+            <Text className="text-2xl font-bold text-gray-900">Guitar Shop</Text>
+            <Text className="text-sm text-gray-500">Find your next sound</Text>
+          </View>
+
+          <Text className="mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Browse by type</Text>
+          <ScrollView
+            horizontal
+            nestedScrollEnabled
+            directionalLockEnabled
+            scrollEnabled
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingRight: 8 }}
+            className="mb-3"
+          >
+            {productTypeOptions.map((option) => {
+              const isSelected = option.value === filters.productTypeId;
+
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  className={`items-center justify-center px-3 py-2 mr-2 border rounded-xl min-w-[84px] ${
+                    isSelected ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"
+                  }`}
+                  onPress={() => {
+                    setFilters((prev) => ({ ...prev, productTypeId: option.value }));
+                    setCurrentPage(1);
+                    setOpenTypeDropdown(false);
+                  }}
+                >
+                  <FontAwesome
+                    name={getTypeIconName(option.label)}
+                    size={16}
+                    color={isSelected ? "white" : "#374151"}
+                  />
+                  <Text
+                    className={`mt-1 text-xs text-center ${
+                      isSelected ? "text-white font-semibold" : "text-gray-700"
+                    }`}
+                    numberOfLines={2}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
           <View className="relative w-full">
           <FontAwesome name="search" size={16} color="gray" className="absolute top-4 left-4"/>
             <TextInput 

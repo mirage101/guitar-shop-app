@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useProductContext } from "../components/ProductContext";
@@ -16,6 +16,20 @@ const Checkout = () => {
   const [city, setCity] = useState(userData?.city || "");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  useEffect(() => {
+    if (!showSuccessModal) {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setShowSuccessModal(false);
+      router.replace("/");
+    }, 2000);
+
+    return () => clearTimeout(timeout);
+  }, [showSuccessModal]);
 
   const handleAddressChange = (value) => {
     setAddress(value);
@@ -97,16 +111,7 @@ const Checkout = () => {
       await addDoc(collection(db, "orders"), payload);
 
       setCartItems([]);
-      Alert.alert("Success", "Order placed successfully.", [
-        {
-          text: "View My Orders",
-          onPress: () => router.push("/orders"),
-        },
-        {
-          text: "Go Home",
-          onPress: () => router.push("/"),
-        },
-      ]);
+      setShowSuccessModal(true);
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "Unable to place order. Please try again.");
@@ -160,6 +165,35 @@ const Checkout = () => {
           )}
         </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={showSuccessModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setShowSuccessModal(false);
+          router.replace("/");
+        }}
+      >
+        <View className="items-center justify-center flex-1 px-6 bg-black/50">
+          <View className="w-full max-w-sm p-6 bg-white rounded-2xl">
+            <Text className="text-2xl font-semibold text-center text-gray-900">Thank you!</Text>
+            <Text className="mt-2 text-base text-center text-gray-600">
+              Your order was placed successfully. Redirecting you home...
+            </Text>
+
+            <TouchableOpacity
+              className="py-3 mt-6 bg-blue-600 rounded-lg"
+              onPress={() => {
+                setShowSuccessModal(false);
+                router.replace("/");
+              }}
+            >
+              <Text className="font-semibold text-center text-white">Go to Home</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

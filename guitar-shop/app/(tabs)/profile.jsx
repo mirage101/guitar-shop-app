@@ -27,6 +27,11 @@ const Profile = () => {
                     My Orders
                 </Text>
             </TouchableOpacity>
+            <TouchableOpacity className="px-6 py-3 mt-4 bg-pink-600 rounded-lg" onPress={() => router.push("/wishlist")}>
+                <Text className="font-semibold text-center text-white">
+                    My Wishlist
+                </Text>
+            </TouchableOpacity>
             <TouchableOpacity className="px-6 py-3 mt-6 bg-blue-600 rounded-lg" onPress={handleLogout}>
                 <Text className="font-semibold text-center text-white">
                     Logout

@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { collection, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
+import { router } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { db } from "../lib/firebase";
 import { useUserContext } from "../components/UserContext";
 
@@ -11,6 +13,9 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const pageSize = 5;
 
   const getOrderTimestamp = (order) => {
@@ -32,7 +37,12 @@ const Orders = () => {
         return;
       }
 
-      await deleteDoc(doc(db, "orders", orderId));
+      if (!orderId) {
+        Alert.alert("Error", "Invalid order selected.");
+        return;
+      }
+
+      await deleteDoc(doc(db, "orders", String(orderId)));
 
       Alert.alert("Success", "Order removed successfully.");
 
@@ -45,6 +55,33 @@ const Orders = () => {
       console.log(error);
       Alert.alert("Error", "Unable to remove order. Please try again.");
     }
+  };
+
+  const openRemoveConfirmation = (orderId) => {
+    setSelectedOrderId(orderId);
+    setShowRemoveModal(true);
+  };
+
+  const closeRemoveConfirmation = () => {
+    if (deleting) {
+      return;
+    }
+
+    setShowRemoveModal(false);
+    setSelectedOrderId(null);
+  };
+
+  const confirmRemoveOrder = async () => {
+    if (!selectedOrderId) {
+      closeRemoveConfirmation();
+      return;
+    }
+
+    setDeleting(true);
+    await removeOrder(selectedOrderId);
+    setDeleting(false);
+    setShowRemoveModal(false);
+    setSelectedOrderId(null);
   };
 
   const fetchOrders = async (page = currentPage) => {
@@ -85,6 +122,43 @@ const Orders = () => {
     setLoading(true);
     fetchOrders(currentPage);
   }, [currentPage, userData?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!userData?.id) {
+        return;
+      }
+
+      setLoading(true);
+      fetchOrders(currentPage);
+    }, [currentPage, userData?.id])
+  );
+
+  const getStatusStyles = (status) => {
+    const normalizedStatus = (status || "pending").toLowerCase();
+
+    if (normalizedStatus === "delivered") {
+      return {
+        container: "bg-green-100",
+        text: "text-green-700",
+        label: "Delivered",
+      };
+    }
+
+    if (normalizedStatus === "cancelled") {
+      return {
+        container: "bg-red-100",
+        text: "text-red-700",
+        label: "Cancelled",
+      };
+    }
+
+    return {
+      container: "bg-amber-100",
+      text: "text-amber-700",
+      label: "Pending",
+    };
+  };
 
   if (loading) {
     return (
@@ -131,9 +205,20 @@ const Orders = () => {
           }
           renderItem={({ item }) => (
             <View className="p-4 mb-4 border border-gray-300 rounded-lg">
-              <Text className="text-lg font-semibold">Order #{item.id.slice(0, 8)}</Text>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-lg font-semibold">Order #{item.id.slice(0, 8)}</Text>
+                <View className={`px-3 py-1 rounded-full ${getStatusStyles(item.status).container}`}>
+                  <Text className={`text-xs font-semibold ${getStatusStyles(item.status).text}`}>
+                    {getStatusStyles(item.status).label}
+                  </Text>
+                </View>
+              </View>
               <Text className="text-gray-600">Date: {new Date(getOrderTimestamp(item)).toLocaleString()}</Text>
               <Text className="text-gray-600">Payment: {item.paymentMode}</Text>
+              <Text className="mt-1 text-gray-600">
+                Delivery: {item.address || "No address provided"}
+                {item.city ? `, ${item.city}` : ""}
+              </Text>
               <Text className="text-lg font-semibold">Total: ${Number(item.grandTotalPrice).toFixed(2)}</Text>
 
               <View className="mt-3">
@@ -148,17 +233,20 @@ const Orders = () => {
               </View>
 
               <TouchableOpacity
-                className="px-4 py-2 mt-3 bg-red-600 rounded-lg"
+                className="px-4 py-2 mt-3 bg-blue-600 rounded-lg"
                 onPress={() =>
-                  Alert.alert("Remove Order", "Are you sure you want to remove this order?", [
-                    { text: "Cancel", style: "cancel" },
-                    {
-                      text: "Remove",
-                      style: "destructive",
-                      onPress: () => removeOrder(item.id),
-                    },
-                  ])
+                  router.push({
+                    pathname: "/order-details/[id]",
+                    params: { id: item.id },
+                  })
                 }
+              >
+                <Text className="font-semibold text-center text-white">View Details</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="px-4 py-2 mt-3 bg-red-600 rounded-lg"
+                onPress={() => openRemoveConfirmation(item.id)}
               >
                 <Text className="font-semibold text-center text-white">Remove Order</Text>
               </TouchableOpacity>
@@ -166,6 +254,42 @@ const Orders = () => {
           )}
         />
       )}
+
+      <Modal
+        visible={showRemoveModal}
+        transparent
+        animationType="fade"
+        onRequestClose={closeRemoveConfirmation}
+      >
+        <View className="items-center justify-center flex-1 px-6 bg-black/50">
+          <View className="w-full max-w-sm p-6 bg-white rounded-2xl">
+            <Text className="text-xl font-semibold text-center text-gray-900">Remove Order?</Text>
+            <Text className="mt-2 text-center text-gray-600">
+              This action cannot be undone. Do you want to continue?
+            </Text>
+
+            <View className="flex-row gap-3 mt-6">
+              <TouchableOpacity
+                className="flex-1 py-3 bg-gray-200 rounded-lg"
+                onPress={closeRemoveConfirmation}
+                disabled={deleting}
+              >
+                <Text className="font-semibold text-center text-gray-700">Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-1 py-3 bg-red-600 rounded-lg"
+                onPress={confirmRemoveOrder}
+                disabled={deleting}
+              >
+                <Text className="font-semibold text-center text-white">
+                  {deleting ? "Removing..." : "Remove"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
