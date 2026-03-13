@@ -1,9 +1,12 @@
 import { useState } from "react";
 import {Image, Text, TouchableOpacity, View} from "react-native";
 import {router} from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
+import { useProductContext } from "./ProductContext";
 
 const ProductCard = ({product}) => {
     const [imageFailed, setImageFailed] = useState(false);
+    const { toggleWishlistItem, isWishlisted } = useProductContext();
 
     if (!product) {
         return (
@@ -14,23 +17,37 @@ const ProductCard = ({product}) => {
     }
 
     const imageUrl = product?.image || '';
+    const wishlisted = isWishlisted(product?.id);
     const openProductDetails = () => {
         router.push(`/product/${product?.id}`);
     };
 
     return (
         <View className="w-1/2 p-8">
-        {!imageFailed && !!imageUrl ? (
-            <Image
-                source={{uri: encodeURI(imageUrl)}}
-                style={{ width: '100%', height: 208 }}
-                resizeMode="cover"
-                onError={() => setImageFailed(true)}
-                className="w-full h-52"
-            />
-        ) : (
-            <Text>Image not available</Text>
-        )}
+        <View className="relative">
+            {!imageFailed && !!imageUrl ? (
+                <Image
+                    source={{uri: encodeURI(imageUrl)}}
+                    style={{ width: '100%', height: 208 }}
+                    resizeMode="cover"
+                    onError={() => setImageFailed(true)}
+                    className="w-full h-52"
+                />
+            ) : (
+                <Text>Image not available</Text>
+            )}
+
+            <TouchableOpacity
+                className="absolute p-2 bg-white rounded-full top-2 right-2"
+                onPress={() => toggleWishlistItem(product)}
+            >
+                <FontAwesome
+                    name={wishlisted ? "heart" : "heart-o"}
+                    size={18}
+                    color={wishlisted ? "#DC2626" : "#374151"}
+                />
+            </TouchableOpacity>
+        </View>
         <TouchableOpacity onPress={openProductDetails}>
             <Text className="text-lg font-semibold">{product?.name}</Text>
         </TouchableOpacity>

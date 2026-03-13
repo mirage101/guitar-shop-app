@@ -3,6 +3,8 @@ import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 const CART_ITEMS_KEY = "cartItems";
+const WISHLIST_ITEMS_KEY = "wishlistItems";
+const DEAL_ALERTS_KEY = "dealAlertSettings";
 const isWeb = Platform.OS === "web";
 
 const defaultProductContextValue = {
@@ -12,6 +14,14 @@ const defaultProductContextValue = {
     setCartItems: () => {},
     increaseQuantity: () => {},
     decreaseQuantity: () => {},
+    wishlistItems: [],
+    toggleWishlistItem: () => {},
+    isWishlisted: () => false,
+    dealAlertSettings: {},
+    toggleDealAlert: () => {},
+    isDealAlertEnabled: () => false,
+    markDealAlertNotified: () => {},
+    syncWishlistItemsFromCatalog: () => {},
     totalAmount: 0,
 };
 
@@ -19,6 +29,8 @@ export const ProductContext = createContext(defaultProductContextValue);
 
 export const ProductProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
+    const [wishlistItems, setWishlistItems] = useState([]);
+    const [dealAlertSettings, setDealAlertSettings] = useState({});
     const [isCartHydrated, setIsCartHydrated] = useState(false);
 
     useEffect(() => {
@@ -39,6 +51,42 @@ export const ProductProvider = ({ children }) => {
         };
 
         hydrateCart();
+    }, []);
+
+    useEffect(() => {
+        const hydrateWishlist = async () => {
+            try {
+                const storedWishlistItems = isWeb
+                    ? localStorage.getItem(WISHLIST_ITEMS_KEY)
+                    : await SecureStore.getItemAsync(WISHLIST_ITEMS_KEY);
+
+                if (storedWishlistItems) {
+                    setWishlistItems(JSON.parse(storedWishlistItems));
+                }
+            } catch (error) {
+                console.log("Wishlist hydrate error:", error);
+            }
+        };
+
+        hydrateWishlist();
+    }, []);
+
+    useEffect(() => {
+        const hydrateDealAlerts = async () => {
+            try {
+                const storedDealAlertSettings = isWeb
+                    ? localStorage.getItem(DEAL_ALERTS_KEY)
+                    : await SecureStore.getItemAsync(DEAL_ALERTS_KEY);
+
+                if (storedDealAlertSettings) {
+                    setDealAlertSettings(JSON.parse(storedDealAlertSettings));
+                }
+            } catch (error) {
+                console.log("Deal alerts hydrate error:", error);
+            }
+        };
+
+        hydrateDealAlerts();
     }, []);
 
     useEffect(() => {
@@ -63,6 +111,44 @@ export const ProductProvider = ({ children }) => {
 
         persistCart();
     }, [cartItems, isCartHydrated]);
+
+    useEffect(() => {
+        const persistWishlist = async () => {
+            try {
+                const serializedWishlistItems = JSON.stringify(wishlistItems);
+
+                if (isWeb) {
+                    localStorage.setItem(WISHLIST_ITEMS_KEY, serializedWishlistItems);
+                    return;
+                }
+
+                await SecureStore.setItemAsync(WISHLIST_ITEMS_KEY, serializedWishlistItems);
+            } catch (error) {
+                console.log("Wishlist persist error:", error);
+            }
+        };
+
+        persistWishlist();
+    }, [wishlistItems]);
+
+    useEffect(() => {
+        const persistDealAlerts = async () => {
+            try {
+                const serializedDealAlertSettings = JSON.stringify(dealAlertSettings);
+
+                if (isWeb) {
+                    localStorage.setItem(DEAL_ALERTS_KEY, serializedDealAlertSettings);
+                    return;
+                }
+
+                await SecureStore.setItemAsync(DEAL_ALERTS_KEY, serializedDealAlertSettings);
+            } catch (error) {
+                console.log("Deal alerts persist error:", error);
+            }
+        };
+
+        persistDealAlerts();
+    }, [dealAlertSettings]);
 
     const addProductToCart = (newProduct) => {
         if (!newProduct?.id) {
@@ -121,6 +207,93 @@ export const ProductProvider = ({ children }) => {
         );
     }
 
+    const toggleWishlistItem = (product) => {
+        if (!product?.id) {
+            return;
+        }
+
+        setWishlistItems((prevItems) => {
+            const alreadyExists = prevItems.some(
+                (item) => String(item.id) === String(product.id)
+            );
+
+            if (alreadyExists) {
+                return prevItems.filter((item) => String(item.id) !== String(product.id));
+            }
+
+            return [...prevItems, product];
+        });
+    };
+
+    const isWishlisted = (productId) => {
+        return wishlistItems.some((item) => String(item.id) === String(productId));
+    };
+
+    const toggleDealAlert = (product) => {
+        const productId = String(product?.id || "");
+
+        if (!productId) {
+            return;
+        }
+
+        setDealAlertSettings((prevSettings) => {
+            if (prevSettings[productId]?.enabled) {
+                const nextSettings = { ...prevSettings };
+                delete nextSettings[productId];
+                return nextSettings;
+            }
+
+            return {
+                ...prevSettings,
+                [productId]: {
+                    enabled: true,
+                    baselinePrice: Number(product?.sellPrice ?? 0),
+                    lastNotifiedPrice: null,
+                    productName: product?.name || "Product",
+                },
+            };
+        });
+    };
+
+    const isDealAlertEnabled = (productId) => {
+        return Boolean(dealAlertSettings[String(productId)]?.enabled);
+    };
+
+    const markDealAlertNotified = (productId, newPrice) => {
+        const normalizedProductId = String(productId || "");
+
+        if (!normalizedProductId) {
+            return;
+        }
+
+        setDealAlertSettings((prevSettings) => {
+            if (!prevSettings[normalizedProductId]) {
+                return prevSettings;
+            }
+
+            return {
+                ...prevSettings,
+                [normalizedProductId]: {
+                    ...prevSettings[normalizedProductId],
+                    lastNotifiedPrice: Number(newPrice),
+                },
+            };
+        });
+    };
+
+    const syncWishlistItemsFromCatalog = (catalogMap) => {
+        if (!catalogMap || typeof catalogMap.get !== "function") {
+            return;
+        }
+
+        setWishlistItems((prevItems) =>
+            prevItems.map((item) => {
+                const liveProduct = catalogMap.get(String(item.id));
+                return liveProduct ? { ...item, ...liveProduct } : item;
+            })
+        );
+    };
+
     const totalAmount = cartItems.reduce((total, item) => {
         return total + item.quantity * item.sellPrice
     }, 0);
@@ -134,6 +307,14 @@ export const ProductProvider = ({ children }) => {
                 setCartItems,
                 increaseQuantity,
                 decreaseQuantity,
+                wishlistItems,
+                toggleWishlistItem,
+                isWishlisted,
+                dealAlertSettings,
+                toggleDealAlert,
+                isDealAlertEnabled,
+                markDealAlertNotified,
+                syncWishlistItemsFromCatalog,
                 totalAmount,
             }}
         >

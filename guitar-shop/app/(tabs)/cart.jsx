@@ -1,4 +1,5 @@
-import { Image, Text, TouchableOpacity, View } from "react-native"
+import { useState } from "react";
+import { Image, Modal, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useProductContext } from "../../components/ProductContext"
 import Constants from "expo-constants"
@@ -9,8 +10,9 @@ import { router } from "expo-router";
 const BASE_URL = Constants.expoConfig.extra.BASE_URL;
 
 const Cart = () => {
+    const [showClearCartModal, setShowClearCartModal] = useState(false);
     const { userData } = useUserContext();
-    const { cartItems, increaseQuantity, decreaseQuantity, totalAmount } = useProductContext();
+    const { cartItems, increaseQuantity, decreaseQuantity, totalAmount, setCartItems } = useProductContext();
 
     const getImageUri = (imagePath) => {
         if (!imagePath) {
@@ -31,6 +33,11 @@ const Cart = () => {
         } else {
             router.push("/login");
         }
+    }
+
+    const handleClearCart = () => {
+        setCartItems([]);
+        setShowClearCartModal(false);
     }
 
     const getRatingStars = (rating) => Math.max(0, Math.floor(Number(rating || 0)));
@@ -122,8 +129,49 @@ const Cart = () => {
                             {userData ? "Checkout" : "Login to Checkout"}
                         </Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity
+                        className="py-3 mt-3 bg-red-600 rounded-xl"
+                        onPress={() => setShowClearCartModal(true)}
+                    >
+                        <Text className="font-semibold text-center text-white">
+                            Clear Cart
+                        </Text>
+                    </TouchableOpacity>
                 </View>
             )}
+
+            <Modal
+                visible={showClearCartModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowClearCartModal(false)}
+            >
+                <View className="items-center justify-center flex-1 px-6 bg-black/50">
+                    <View className="w-full max-w-sm p-6 bg-white rounded-2xl">
+                        <Text className="text-xl font-semibold text-center text-gray-900">Clear Cart?</Text>
+                        <Text className="mt-2 text-center text-gray-600">
+                            This will remove all items from your cart.
+                        </Text>
+
+                        <View className="flex-row gap-3 mt-6">
+                            <TouchableOpacity
+                                className="flex-1 py-3 bg-gray-200 rounded-lg"
+                                onPress={() => setShowClearCartModal(false)}
+                            >
+                                <Text className="font-semibold text-center text-gray-700">Cancel</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                className="flex-1 py-3 bg-red-600 rounded-lg"
+                                onPress={handleClearCart}
+                            >
+                                <Text className="font-semibold text-center text-white">Clear</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
