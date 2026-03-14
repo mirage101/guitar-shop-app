@@ -18,8 +18,22 @@ const ProductCard = ({product}) => {
 
     const imageUrl = product?.image || '';
     const wishlisted = isWishlisted(product?.id);
+    const productTypeId = product?.productType?.id ?? product?.productTypeId;
+    const productTypeName = product?.productType?.name;
+
     const openProductDetails = () => {
         router.push(`/product/${product?.id}`);
+    };
+
+    const openProductType = () => {
+        if (!productTypeId) {
+            return;
+        }
+
+        router.push({
+            pathname: "/product-type/[id]",
+            params: { id: String(productTypeId) },
+        });
     };
 
     return (
@@ -51,6 +65,11 @@ const ProductCard = ({product}) => {
         <TouchableOpacity onPress={openProductDetails}>
             <Text className="text-lg font-semibold">{product?.name}</Text>
         </TouchableOpacity>
+            {!!productTypeName && (
+                <TouchableOpacity onPress={openProductType} className="self-start px-2 py-1 mt-1 bg-blue-100 rounded-full">
+                    <Text className="text-xs font-semibold text-blue-700">{productTypeName}</Text>
+                </TouchableOpacity>
+            )}
             <Text className="text-sm text-gray-400">{product?.description}</Text>
             <View className="flex-row items-center mt-3 gap-x-3">
                 <Text className="text-lg font-semibold">Price: ${product?.sellPrice}</Text>

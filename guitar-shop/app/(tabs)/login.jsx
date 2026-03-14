@@ -111,6 +111,9 @@ const Login = () => {
                         />
                         {!!errors.password && <Text className="text-sm text-red-500">{errors.password}</Text>}
                     </View>
+                    <TouchableOpacity onPress={() => router.push("/forgot-password")}> 
+                        <Text className="text-sm font-semibold text-right text-blue-600">Forgot Password?</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity className="py-3 bg-blue-600 rounded-lg" onPress={handleSubmit} disabled={loading}>
                         {loading ? <ActivityIndicator color="white" /> : (
                             <Text className="font-semibold text-center text-white">
