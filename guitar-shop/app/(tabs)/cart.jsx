@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image, Modal, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useProductContext } from "../../components/ProductContext"
@@ -13,6 +13,19 @@ const Cart = () => {
     const [showClearCartModal, setShowClearCartModal] = useState(false);
     const { userData } = useUserContext();
     const { cartItems, increaseQuantity, decreaseQuantity, totalAmount, setCartItems } = useProductContext();
+    const hadCartItemsRef = useRef(false);
+
+    useEffect(() => {
+        if (cartItems.length > 0) {
+            hadCartItemsRef.current = true;
+            return;
+        }
+
+        if (hadCartItemsRef.current && cartItems.length === 0) {
+            hadCartItemsRef.current = false;
+            router.replace("/");
+        }
+    }, [cartItems.length]);
 
     const getImageUri = (imagePath) => {
         if (!imagePath) {
@@ -42,11 +55,13 @@ const Cart = () => {
 
     const getRatingStars = (rating) => Math.max(0, Math.floor(Number(rating || 0)));
     return (
-        <SafeAreaView className="flex-1 p-8 bg-white">
-            <Text className="mb-4 text-3xl font-semibold">Cart</Text>
-            {cartItems.length > 0 ? cartItems.map((product) => (
+        <SafeAreaView className="flex-1 bg-white">
+            <Text className="px-4 mb-4 text-3xl font-semibold">Cart</Text>
+            {cartItems.length > 0 ? cartItems.map((product) => {
+                const hasMrp = Number(product?.mrp ?? 0) > 0;
+                return (
                 <View
-                    className="flex-row gap-5 py-4 border-b border-gray-300"
+                    className="flex-row gap-5 px-4 py-4 border-b border-gray-300"
                     key={product.id}
                 >
                     <Image
@@ -75,9 +90,11 @@ const Cart = () => {
                             <Text className="text-xl font-semibold">
                                 ${product?.sellPrice}
                             </Text>
-                            <Text className="text-sm font-medium text-gray-500 line-through">
-                                ${product?.mrp}
-                            </Text>
+                            {hasMrp ? (
+                                <Text className="text-sm font-medium text-gray-500 line-through">
+                                    ${product?.mrp}
+                                </Text>
+                            ) : null}
                         </View>
                         <View className="flex-row items-center gap-2 mt-2">
                             <TouchableOpacity
@@ -99,13 +116,14 @@ const Cart = () => {
                      
                     </View>
                 </View>
-            )) : (
+                );
+            }) : (
                 <View className="items-center justify-center flex-1">
                     <Text className="text-2xl font-medium"> Cart is empty.</Text>
                 </View>
             )}
             {cartItems.length > 0 && (
-                <View className="my-6">
+                <View className="mx-4 my-6">
                     <Text className="py-2 text-2xl font-semibold border-gray-300 border-y">
                         Cart Summary
                     </Text>

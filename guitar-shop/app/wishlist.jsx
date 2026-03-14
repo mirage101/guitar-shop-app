@@ -6,6 +6,7 @@ import ProductCard from "../components/productCard";
 import { useProductContext } from "../components/ProductContext";
 import { fetchAllProducts } from "../lib/firebaseProducts";
 import { ensureNotificationPermission, sendDealNotification } from "../lib/notifications";
+import Animated, { FadeOutLeft, LinearTransition } from "react-native-reanimated";
 
 const Wishlist = () => {
   const {
@@ -98,9 +99,9 @@ const Wishlist = () => {
           data={wishlistItems}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => (
-            <View className="w-1/2">
-              <ProductCard product={item} />
-              <View className="px-8 mb-4 -mt-4">
+            <Animated.View className="w-full" layout={LinearTransition.springify()} exiting={FadeOutLeft.duration(220)}>
+              <ProductCard product={item} containerClassName="w-full px-4 py-4" />
+              <View className="px-4 mb-4 -mt-2">
                 <View className="flex-row items-center justify-between px-3 py-2 bg-gray-100 rounded-md">
                   <Text className="text-sm font-semibold text-gray-800">
                     Deal Alert
@@ -113,9 +114,9 @@ const Wishlist = () => {
                   />
                 </View>
               </View>
-            </View>
+            </Animated.View>
           )}
-          numColumns={2}
+          numColumns={1}
           contentContainerStyle={{ paddingBottom: 24 }}
         />
       ) : (

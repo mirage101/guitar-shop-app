@@ -178,8 +178,11 @@ const OrderDetails = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 p-6 bg-white">
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <SafeAreaView className="flex-1 bg-white">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24 }}
+      >
         <View className="flex-row items-center justify-between">
           <Text className="text-2xl font-semibold text-gray-900">Order #{order.id.slice(0, 8)}</Text>
           <View className={`px-3 py-1 rounded-full ${statusStyles.container}`}>

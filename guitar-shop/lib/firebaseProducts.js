@@ -1,4 +1,4 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, getDocsFromServer } from "firebase/firestore";
 import { db } from "./firebase";
 
 const isAbsoluteUrl = (url) => /^https?:\/\//i.test(url || "");
@@ -67,8 +67,11 @@ const normalizeProduct = (rawProduct = {}, documentId) => {
   };
 };
 
-const fetchAllProducts = async () => {
-  const snapshot = await getDocs(collection(db, "products"));
+const fetchAllProducts = async ({ forceServer = false } = {}) => {
+  const productsCollection = collection(db, "products");
+  const snapshot = forceServer
+    ? await getDocsFromServer(productsCollection)
+    : await getDocs(productsCollection);
   const products = snapshot.docs.map((productDoc) => normalizeProduct(productDoc.data(), productDoc.id));
 
   return products.filter((product) => product.isActive !== false);
