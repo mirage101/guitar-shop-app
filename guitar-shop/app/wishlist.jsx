@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import ProductCard from "../components/productCard";
@@ -100,17 +100,18 @@ const Wishlist = () => {
           renderItem={({ item }) => (
             <View className="w-1/2">
               <ProductCard product={item} />
-              <View className="px-8 -mt-4 mb-4">
-                <TouchableOpacity
-                  className={`px-3 py-2 rounded-md ${
-                    isDealAlertEnabled(item.id) ? "bg-emerald-600" : "bg-gray-800"
-                  }`}
-                  onPress={() => handleToggleDealAlert(item)}
-                >
-                  <Text className="font-semibold text-center text-white">
-                    {isDealAlertEnabled(item.id) ? "Deal Alert On" : "Notify Me on Deal"}
+              <View className="px-8 mb-4 -mt-4">
+                <View className="flex-row items-center justify-between px-3 py-2 bg-gray-100 rounded-md">
+                  <Text className="text-sm font-semibold text-gray-800">
+                    Deal Alert
                   </Text>
-                </TouchableOpacity>
+                  <Switch
+                    value={isDealAlertEnabled(item.id)}
+                    onValueChange={() => handleToggleDealAlert(item)}
+                    trackColor={{ false: "#9CA3AF", true: "#10B981" }}
+                    thumbColor={isDealAlertEnabled(item.id) ? "#FFFFFF" : "#F3F4F6"}
+                  />
+                </View>
               </View>
             </View>
           )}
