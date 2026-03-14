@@ -11,16 +11,30 @@ const ProductDetails = () =>{
     const {addProductToCart, removeProductFromCart, cartItems} = useProductContext();
     const [product, setProduct] = useState({});
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     const isProductInCart = cartItems.some((item) => item.id === product.id);
     const fetchProductDetails = async () => {
-       if (!id) return;
+          if (!id) {
+              setError("Invalid product id.");
+              setLoading(false);
+              return;
+          }
 
        try {
+              setLoading(true);
+              setError("");
             const fetchedProduct = await findProductById(id);
-            setProduct(fetchedProduct || {});
+              if (!fetchedProduct) {
+                 setProduct({});
+                 setError("Product not found.");
+                 return;
+              }
+
+              setProduct(fetchedProduct);
        } catch (error) {
             console.log("Product fetch error:", error);
+              setError(error?.message || "Unable to load product details.");
        }finally{
         setLoading(false)
        };
@@ -64,6 +78,22 @@ const ProductDetails = () =>{
             </View>
         )
     }
+
+    if (error) {
+        return (
+            <View className="items-center justify-center flex-1 px-6 bg-white">
+                <Text className="text-xl font-semibold text-center text-gray-900">Unable to load product</Text>
+                <Text className="mt-2 text-center text-gray-600">{error}</Text>
+                <TouchableOpacity className="px-4 py-2 mt-4 bg-blue-600 rounded-md" onPress={fetchProductDetails}>
+                    <Text className="font-semibold text-white">Try Again</Text>
+                </TouchableOpacity>
+                <TouchableOpacity className="px-4 py-2 mt-3 bg-gray-200 rounded-md" onPress={() => router.back()}>
+                    <Text className="font-semibold text-gray-700">Go Back</Text>
+                </TouchableOpacity>
+            </View>
+        )
+    }
+
     return(
         <View className="flex-1 p-10 bg-white">
             <Image 

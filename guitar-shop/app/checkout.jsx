@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import * as Location from "expo-location";
+import * as Haptics from "expo-haptics";
+import { FontAwesome } from "@expo/vector-icons";
 import { useProductContext } from "../components/ProductContext";
 import { useUserContext } from "../components/UserContext";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
@@ -16,6 +19,7 @@ const Checkout = () => {
   const [city, setCity] = useState(userData?.city || "");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
@@ -42,6 +46,72 @@ const Checkout = () => {
     setCity(value);
     if (errors.city) {
       setErrors((prev) => ({ ...prev, city: "" }));
+    }
+  };
+
+  const handleUseCurrentLocation = async () => {
+    if (Platform.OS !== "web") {
+      Haptics.selectionAsync().catch(() => null);
+    }
+
+    if (Platform.OS === "web") {
+      Alert.alert("Unavailable", "Location autofill is only available on mobile devices.");
+      return;
+    }
+
+    setLocationLoading(true);
+
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+      if (permission.status !== "granted") {
+        Alert.alert("Permission Required", "Allow location permission to autofill your address.");
+        return;
+      }
+
+      const coords = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const geoResult = await Location.reverseGeocodeAsync({
+        latitude: coords.coords.latitude,
+        longitude: coords.coords.longitude,
+      });
+
+      const primary = geoResult?.[0];
+      if (!primary) {
+        Alert.alert("Unavailable", "Could not resolve an address for your current location.");
+        return;
+      }
+
+      const lineOne = [primary.name, primary.street].filter(Boolean).join(" ").trim();
+      const locality = primary.city || primary.subregion || "";
+      const region = primary.region || "";
+      const postal = primary.postalCode || "";
+      const country = primary.country || "";
+
+      const composedAddress = [lineOne, region, postal, country]
+        .filter(Boolean)
+        .join(", ")
+        .trim();
+
+      if (composedAddress) {
+        setAddress(composedAddress);
+      }
+
+      if (locality) {
+        setCity(locality);
+      }
+
+      setErrors((prev) => ({
+        ...prev,
+        address: "",
+        city: "",
+      }));
+    } catch (error) {
+      console.log("handleUseCurrentLocation error:", error);
+      Alert.alert("Error", "Unable to fetch your location. Please try again.");
+    } finally {
+      setLocationLoading(false);
     }
   };
 
@@ -122,49 +192,76 @@ const Checkout = () => {
 
   return (
     <SafeAreaView className="flex-1 p-8 bg-white">
-      <Text className="mb-4 text-3xl font-semibold">Checkout</Text>
-
-      <View className="gap-4">
-        <View className="gap-2">
-          <Text className="text-base font-medium text-gray-700">Address</Text>
-          <TextInput
-            placeholder="Enter your address"
-            className="px-4 py-3 border border-gray-300 rounded-lg"
-            value={address}
-            onChangeText={handleAddressChange}
-          />
-          {!!errors.address && <Text className="text-sm text-red-500">{errors.address}</Text>}
-        </View>
-
-        <View className="gap-2">
-          <Text className="text-base font-medium text-gray-700">City</Text>
-          <TextInput
-            placeholder="Enter your city"
-            className="px-4 py-3 border border-gray-300 rounded-lg"
-            value={city}
-            onChangeText={handleCityChange}
-          />
-          {!!errors.city && <Text className="text-sm text-red-500">{errors.city}</Text>}
-        </View>
-
-        <View className="mt-2">
-          <Text className="text-lg font-medium">Items: {cartItems.length}</Text>
-          <Text className="text-xl font-semibold">Total: ${totalAmount.toFixed(2)}</Text>
-          <Text className="mt-1 text-sm text-gray-600">Payment mode: Cash on Delivery</Text>
-        </View>
-
-        <TouchableOpacity
-          className="py-3 mt-2 bg-blue-600 rounded-lg"
-          onPress={placeOrder}
-          disabled={loading}
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
         >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="font-semibold text-center text-white">Place Order</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+          <Text className="mb-4 text-3xl font-semibold">Checkout</Text>
+
+          <View className="gap-4">
+            <TouchableOpacity
+              className="py-3 bg-gray-100 border border-gray-300 rounded-lg"
+              onPress={handleUseCurrentLocation}
+              disabled={locationLoading}
+            >
+              {locationLoading ? (
+                <ActivityIndicator color="#111827" />
+              ) : (
+                <View className="flex-row items-center justify-center gap-2">
+                  <FontAwesome name="crosshairs" size={14} color="#1F2937" />
+                  <Text className="font-semibold text-center text-gray-800">Use Current Location</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <View className="gap-2">
+              <Text className="text-base font-medium text-gray-700">Address</Text>
+              <TextInput
+                placeholder="Enter your address"
+                className="px-4 py-3 border border-gray-300 rounded-lg"
+                value={address}
+                onChangeText={handleAddressChange}
+              />
+              {!!errors.address && <Text className="text-sm text-red-500">{errors.address}</Text>}
+            </View>
+
+            <View className="gap-2">
+              <Text className="text-base font-medium text-gray-700">City</Text>
+              <TextInput
+                placeholder="Enter your city"
+                className="px-4 py-3 border border-gray-300 rounded-lg"
+                value={city}
+                onChangeText={handleCityChange}
+              />
+              {!!errors.city && <Text className="text-sm text-red-500">{errors.city}</Text>}
+            </View>
+
+            <View className="mt-2">
+              <Text className="text-lg font-medium">Items: {cartItems.length}</Text>
+              <Text className="text-xl font-semibold">Total: ${totalAmount.toFixed(2)}</Text>
+              <Text className="mt-1 text-sm text-gray-600">Payment mode: Cash on Delivery</Text>
+            </View>
+
+            <TouchableOpacity
+              className="py-3 mt-2 bg-blue-600 rounded-lg"
+              onPress={placeOrder}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="font-semibold text-center text-white">Place Order</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       <Modal
         visible={showSuccessModal}

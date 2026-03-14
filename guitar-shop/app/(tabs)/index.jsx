@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Image, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProductCard from '../../components/productCard';
 import {FontAwesome} from "@expo/vector-icons";
@@ -172,15 +172,15 @@ export default function App() {
       <View className="flex-1 bg-white">
         {openTypeDropdown ? (
           <Pressable
-            className="absolute top-0 left-0 right-0 bottom-0 z-10"
+            className="absolute top-0 bottom-0 left-0 right-0 z-10"
             onPress={() => setOpenTypeDropdown(false)}
           />
         ) : null}
         <View className="px-4 pt-3">
           <View className="mb-4 overflow-hidden bg-blue-50 rounded-2xl">
-            <Image
+           <Image
               source={require("../../assets/mrn-logo.png")}
-              className="w-full h-32"
+              className="self-center w-6 h-6"
               resizeMode="cover"
             />
           </View>
@@ -271,7 +271,22 @@ export default function App() {
             <Text className="text-lg font-semibold text-center text-blue-500">Filter</Text>
           </TouchableOpacity>
         </View>
-        {products.length>0? (
+        {loading ? (
+          <View className="items-center justify-center flex-1">
+            <ActivityIndicator size="large" />
+          </View>
+        ) : error ? (
+          <View className="items-center justify-center flex-1 px-6">
+            <Text className="text-lg font-semibold text-center text-gray-800">Unable to load products</Text>
+            <Text className="mt-2 text-center text-gray-500">{error}</Text>
+            <TouchableOpacity
+              className="px-4 py-2 mt-4 bg-blue-600 rounded-md"
+              onPress={fetchProductData}
+            >
+              <Text className="font-semibold text-white">Try Again</Text>
+            </TouchableOpacity>
+          </View>
+        ) : products.length>0 ? (
           <FlatList
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24 }}

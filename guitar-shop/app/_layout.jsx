@@ -1,4 +1,5 @@
 import { Stack } from "expo-router"
+import { StatusBar } from "expo-status-bar"
 import "./global.css"
 import { ProductProvider } from "../components/ProductContext"
 import { UserProvider } from "../components/UserContext"
@@ -7,6 +8,7 @@ const RootLayout = () =>{
     return (
         <UserProvider>
             <ProductProvider>
+                <StatusBar style="dark" />
                 <Stack>
                     <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
                     <Stack.Screen name="product/[id]" options={{title: "Product Details", headerBackTitle: "Back"}}/>

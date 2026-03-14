@@ -16,6 +16,7 @@ const Profile = () => {
         await removeToken();
         router.push("/")
     }
+
     return (
         <SafeAreaView className="items-center flex-1 py-20 bg-white">
             <FontAwesome name="user" size={80} color="black" />

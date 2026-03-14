@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../lib/firebase";
@@ -39,36 +39,47 @@ const ForgotPassword = () => {
 
   return (
     <SafeAreaView className="flex-1 py-20 bg-white">
-      <Text className="text-4xl font-medium text-center">Forgot Password</Text>
-      <View className="w-full max-w-sm mx-auto">
-        <View className="flex-col gap-6">
-          <View className="flex-col gap-2">
-            <Text className="text-base font-medium text-gray-700">Email</Text>
-            <TextInput
-              placeholder="Enter your Email"
-              className="px-4 py-3 border border-gray-300 rounded-lg"
-              autoCapitalize="none"
-              onChangeText={setEmail}
-              value={email}
-            />
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
+          <Text className="text-4xl font-medium text-center">Forgot Password</Text>
+          <View className="w-full max-w-sm mx-auto">
+            <View className="flex-col gap-6">
+              <View className="flex-col gap-2">
+                <Text className="text-base font-medium text-gray-700">Email</Text>
+                <TextInput
+                  placeholder="Enter your Email"
+                  className="px-4 py-3 border border-gray-300 rounded-lg"
+                  autoCapitalize="none"
+                  onChangeText={setEmail}
+                  value={email}
+                />
+              </View>
+
+              <TouchableOpacity className="py-3 bg-blue-600 rounded-lg" onPress={handleSubmit} disabled={loading}>
+                {loading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text className="font-semibold text-center text-white">Send Reset Email</Text>
+                )}
+              </TouchableOpacity>
+
+              <Text className="font-medium text-center">
+                Remembered your password?{" "}
+                <Text className="font-semibold text-blue-600" onPress={() => router.push("/login")}>
+                  Login
+                </Text>
+              </Text>
+            </View>
           </View>
-
-          <TouchableOpacity className="py-3 bg-blue-600 rounded-lg" onPress={handleSubmit} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="font-semibold text-center text-white">Send Reset Email</Text>
-            )}
-          </TouchableOpacity>
-
-          <Text className="font-medium text-center">
-            Remembered your password?{" "}
-            <Text className="font-semibold text-blue-600" onPress={() => router.push("/login")}>
-              Login
-            </Text>
-          </Text>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
