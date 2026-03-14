@@ -150,6 +150,11 @@ export const ProductProvider = ({ children }) => {
         persistDealAlerts();
     }, [dealAlertSettings]);
 
+    const getProductId = (product) => {
+        const resolvedId = product?.id ?? product?.productId ?? product?._id;
+        return resolvedId === undefined || resolvedId === null ? "" : String(resolvedId);
+    };
+
     const addProductToCart = (newProduct) => {
         if (!newProduct?.id) {
             return;
@@ -208,25 +213,42 @@ export const ProductProvider = ({ children }) => {
     }
 
     const toggleWishlistItem = (product) => {
-        if (!product?.id) {
+        const productId = getProductId(product);
+
+        if (!productId) {
             return;
         }
 
         setWishlistItems((prevItems) => {
             const alreadyExists = prevItems.some(
-                (item) => String(item.id) === String(product.id)
+                (item) => getProductId(item) === productId
             );
 
             if (alreadyExists) {
-                return prevItems.filter((item) => String(item.id) !== String(product.id));
+                setDealAlertSettings((prevSettings) => {
+                    if (!prevSettings[productId]) {
+                        return prevSettings;
+                    }
+
+                    const nextSettings = { ...prevSettings };
+                    delete nextSettings[productId];
+                    return nextSettings;
+                });
+
+                return prevItems.filter((item) => getProductId(item) !== productId);
             }
 
-            return [...prevItems, product];
+            return [...prevItems, { ...product, id: product?.id ?? productId }];
         });
     };
 
     const isWishlisted = (productId) => {
-        return wishlistItems.some((item) => String(item.id) === String(productId));
+        const normalizedId = String(productId ?? "");
+        if (!normalizedId) {
+            return false;
+        }
+
+        return wishlistItems.some((item) => getProductId(item) === normalizedId);
     };
 
     const toggleDealAlert = (product) => {
