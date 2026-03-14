@@ -185,9 +185,19 @@ export default function App() {
             />
           </View>
 
-          <View className="px-1 mb-4">
-            <Text className="text-2xl font-bold text-gray-900">Guitar Shop</Text>
-            <Text className="text-sm text-gray-500">Find your next sound</Text>
+          <View className="flex-row items-center justify-between px-1 mb-4">
+            <View>
+              <Text className="text-2xl font-bold text-gray-900">Guitar Shop</Text>
+              <Text className="text-sm text-gray-500">Find your next sound</Text>
+            </View>
+            <TouchableOpacity
+              onPress={toggleFilterModal}
+              className="items-center justify-center w-10 h-10 border border-blue-500 rounded-full"
+              accessibilityRole="button"
+              accessibilityLabel="Open filters"
+            >
+              <FontAwesome name="sliders" size={16} color="#3B82F6" />
+            </TouchableOpacity>
           </View>
 
           <Text className="mb-2 text-xs font-semibold tracking-wider text-gray-500 uppercase">Browse by type</Text>
@@ -242,34 +252,6 @@ export default function App() {
               onChangeText={(text) => setFilters((prev) => ({...prev, search: text}))}
             />
           </View>
-          <TouchableOpacity
-            onPress={() => setOpenTypeDropdown((prev) => !prev)}
-            className="w-full px-4 py-3 mt-3 border border-gray-300 rounded-md"
-          >
-            <Text className="text-base text-gray-700">Type: {selectedTypeLabel}</Text>
-          </TouchableOpacity>
-
-          {openTypeDropdown ? (
-            <View className="z-20 w-full mt-2 overflow-hidden border border-gray-200 rounded-md bg-gray-50">
-              {productTypeOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  className="px-4 py-3 border-b border-gray-200"
-                  onPress={() => {
-                    setFilters((prev) => ({ ...prev, productTypeId: option.value }));
-                    setCurrentPage(1);
-                    setOpenTypeDropdown(false);
-                  }}
-                >
-                  <Text className="text-gray-700">{option.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : null}
-
-          <TouchableOpacity onPress={toggleFilterModal} className="self-start px-3 py-1 mt-3 border border-blue-500 rounded-md">
-            <Text className="text-lg font-semibold text-center text-blue-500">Filter</Text>
-          </TouchableOpacity>
         </View>
         {loading ? (
           <View className="items-center justify-center flex-1">
