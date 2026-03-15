@@ -90,10 +90,7 @@ const Wishlist = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="px-4 py-4">
-        <Text className="text-3xl font-semibold">My Wishlist</Text>
-      </View>
-
+      
       {wishlistItems.length ? (
         <FlatList
           data={wishlistItems}

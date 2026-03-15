@@ -93,7 +93,7 @@ const Register = () => {
 
     }
     return (
-        <SafeAreaView className="flex-1 py-20 bg-white">
+        <SafeAreaView className="flex-1 px-6 py-20 bg-white">
             <KeyboardAvoidingView
                 className="flex-1"
                 behavior={Platform.OS === "ios" ? "padding" : "height"}

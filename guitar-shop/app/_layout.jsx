@@ -11,7 +11,6 @@ const RootLayout = () =>{
                 <StatusBar style="dark" />
                 <Stack>
                     <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-                    <Stack.Screen name="product/[id]" options={{title: "Product Details", headerBackTitle: "Back"}}/>
                     <Stack.Screen name="product-type/[id]" options={{title: "Product Type", headerBackTitle: "Back"}}/>
                     <Stack.Screen name="checkout" options={{title: "Checkout", headerBackTitle: "Back"}}/>
                     <Stack.Screen name="orders" options={{title: "My Orders", headerBackTitle: "Back"}}/>
