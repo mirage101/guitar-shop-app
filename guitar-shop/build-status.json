@@ -1,0 +1,50 @@
+﻿{
+  "id": "a3578a4e-b121-4aec-b2f2-a48f87d33631",
+  "status": "FINISHED",
+  "platform": "ANDROID",
+  "artifacts": {
+    "buildUrl": "https://expo.dev/artifacts/eas/maSqqJ4LHHt8cFg15bNvtP.apk",
+    "applicationArchiveUrl": "https://expo.dev/artifacts/eas/maSqqJ4LHHt8cFg15bNvtP.apk"
+  },
+  "fingerprint": {
+    "id": "019cf0bd-cb2e-72b7-9107-3c6ae546c342",
+    "hash": "2558a3ff2affd0d5c961bebe6a30b56bcda987a5"
+  },
+  "initiatingActor": {
+    "id": "c8ca93a4-372d-451b-94e3-493c2eb8e54a",
+    "displayName": "mirage101"
+  },
+  "logFiles": [
+    "https://job-logs.eascdn.net/production/a3578a4e-b121-4aec-b2f2-a48f87d33631/1773565496468-8bfee44b-9779-4ad7-a9db-4e4bdb4c13f1.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260315%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260315T094151Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=0e217ec2d56c57a4306e95fc881db1b45e2fd94c6e694b8b4869345c8aa1958a2fae42097a0d56f2a04ee1c48a804cd46fd33be8790c87082be56edc1ecc7ad5df19f865ac98256b64e1f74ac8026f1f808ab4b2705064bd4f4acc3b20038dcb0dd6c3ec6f69207650bcca372787d8257be88c5a7696384941c217c69bef273dc3436707edafefead66745ab2ce455b14bb577899c461ed650030d44a7b253dd3b10a762302c32deffc5fa035af9bbb4f33a661b9774a9ba450d7c23e7378f154624bf397a7e32d6bc7a56a6afba5c34d03b3b778db483a8b6d38398ad801437b08e2dcc48c5cd01595178eac46e365ed9d4a7655fbec899148de736d3e641d5",
+    "https://job-logs.eascdn.net/production/a3578a4e-b121-4aec-b2f2-a48f87d33631/1773565500995-fb861943-9274-47eb-a3c6-9cd26cd7dbb1.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260315%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260315T094151Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=da97132ab45da06aa816801e4180ae2f54f2da3a9f36bd8098fdbccbff7fc09b28f9486bfbcade52ed5a99efaa028dfbd5c1a18be6a04a0e206bec0324dcd22409d70301e50b12c602f3ebda5c4d26b929c5fff3046992261be961db540315e1d2669200629dfa27154906668f2eff5995e45f17c95c4228e4d4460e5565dbc85dc7183e63f238a14841968373800f0e263f19a362988784b5d95119945f7c4dfc4529648ff28196af1a0ce4a8592a437fe47b47e725fa55b32a54ff7355310c207a6843e3528b651718407b490ac9a2159c32724040d9d21fea0fe907fb6edf338418a9aba4897bc973f518e31b142ba027e7bf1241dd8cd8d236f8aaf84a42",
+    "https://job-logs.eascdn.net/production/a3578a4e-b121-4aec-b2f2-a48f87d33631/1773565501213-a27292d8-2cad-4502-9d81-473027ac5d3c.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260315%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260315T094151Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=8fe6c01852867439d1e324a9ffe930c3c475c20c721bc6a133a3ea954ab675bafaa811816d40cd3fdea9c533b57508ee3858882139409b2dc3975b555a4a7c3f81b1db3dd759862903dc36728d38515d8115c18d747c2d03cca3d41a23ca0f808f7cbcc3f83d3bd74f5f482f78444fc75bd0c41eee773b839d6355a9e4a72965ed25fb8c7f2e4abf0c5b03294084837912d8e2c063862ce0e108c046a622995cb98b8de8abfd80ad60b82b98f7b1af8af2e40b42b1fc281719cc4a9617df865c62b9e9156fecaf4c3c0b035e4a4c2ce3a2863d4fdb30b289e1fc67936a8d8645b7d6d4244c699ff7459c498bdaa34f9145c06a4f62aaf65fb1c385653d460f95",
+    "https://job-logs.eascdn.net/production/a3578a4e-b121-4aec-b2f2-a48f87d33631/1773565501377-4d5c88e6-8b49-438a-a5bd-0c5b287800c1.txt?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=www-production%40exponentjs.iam.gserviceaccount.com%2F20260315%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20260315T094151Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=5313054692e4a808c9dbacba157ca8ac3e04f0bb3d3f10c3f09f57280ac543e195c2e516f30467806bf3dee3efdacff548bb60a07f6563ae77e27cfc9b63476477b7cc68e7bf22a33472555ad775fd8992b852c2655bbb9d26b0b977f6fb0c6fe984b40e127f2bbae1084adc29c9cfad98fc83aad799aedf2e6def081af5918f626eea49c84e1e858f790e8c1f6f6fa132daf962225ddc3193145f0979de86eeab440c2edc5742c6c67e3537ed60a76baebdd75c5dc3dfdc2ac90e435acfcb29edd7f5207588553b10e4d46e841a8ca557de2ec2af94feec33181f4eb6b96676688b7d5318e0238381cb7516081a4da0bbac78b432024b1fbf6d678a453f1c19"
+  ],
+  "project": {
+    "id": "e8204725-82b1-4467-ba6a-64eec8d7bd87",
+    "name": "guitar-shop",
+    "slug": "guitar-shop",
+    "ownerAccount": {
+      "id": "d747f040-b697-41af-92da-a53dc237f268",
+      "name": "mirage101"
+    }
+  },
+  "distribution": "INTERNAL",
+  "buildProfile": "preview",
+  "sdkVersion": "54.0.0",
+  "appVersion": "1.0.0",
+  "appBuildVersion": "1",
+  "gitCommitHash": "010db324fb6dee49dee36c6865549613f2528ad8",
+  "gitCommitMessage": "Merge pull request #19 from mirage101/finalizing-the-project\n\nfinalizing some styling, and settings for apk build",
+  "priority": "NORMAL",
+  "createdAt": "2026-03-15T09:04:55.882Z",
+  "updatedAt": "2026-03-15T09:19:15.600Z",
+  "completedAt": "2026-03-15T09:19:09.870Z",
+  "expirationDate": "2026-03-29T09:04:56.092Z",
+  "isForIosSimulator": false,
+  "metrics": {
+    "buildWaitTime": 471,
+    "buildQueueTime": 42718,
+    "buildDuration": 810252
+  }
+}
