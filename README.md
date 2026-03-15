@@ -1,4 +1,4 @@
-# Guitar Shop Monorepo
+# Guitar Shop app
 
 A full-stack guitar shopping platform with:
 
