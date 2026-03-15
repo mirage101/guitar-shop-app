@@ -20,15 +20,6 @@ const SortingOptions = [
     {value: "sellPrice", label: "Price low to high"},
 ]
 
-const RatingOptions = [
-    {value: "all", label:"All"},
-    {value: "1", label:"1"},
-    {value: "2", label:"2"},
-    {value: "3", label:"3"},
-    {value: "4", label:"4"},
-    {value: "5", label:"5"},
-]
-
 const AvailabilityOptions = [
     {value: "all", label: "All"},
     {value: "true", label: "In Stock"},
@@ -39,7 +30,6 @@ const FilterModal = ({openFilterModal, toggleFilterModal, filterHandler}) =>{
     const [filters, setFilters] = useState({
         productTypeId: "all",
         sortBy: "all",
-        rating: "all",
         inStock: "all"
     });
 
@@ -72,13 +62,11 @@ const FilterModal = ({openFilterModal, toggleFilterModal, filterHandler}) =>{
         setFilters({
             productTypeId: "all",
             sortBy:"all",
-            rating: "all",
             inStock: "all"
         })
         filterHandler({
             productTypeId: "all",
             sortBy:"all",
-            rating: "all",
             inStock: "all"
         });
     }
@@ -108,17 +96,6 @@ const FilterModal = ({openFilterModal, toggleFilterModal, filterHandler}) =>{
                        <Pressable onPress={() => handleFilterChange("sortBy", option.value)}  key={index} className={cn("px-4 py-2 border border-gray-300 rounded-lg",                       filters.sortBy === option.value && "bg-blue-500 border-blue-500"
                             )}>
                             <Text className={cn(filters.sortBy === option.value && "text-white font-medium")}>{option.label}</Text>
-                        </Pressable>
-                    ))}
-                    </View>
-                </View>
-                <View className="mb-4">
-                    <Text className="my-4 text-xl font-semibold">Rating</Text>
-                    <View className="flex-row flex-wrap gap-3">
-                    {RatingOptions.map((option, index)=>(
-                       <Pressable onPress={() => handleFilterChange("rating", option.value)}  key={index} className={cn("px-4 py-2 border border-gray-300 rounded-lg",                       filters.rating === option.value && "bg-blue-500 border-blue-500"
-                            )}>
-                            <Text className={cn(filters.rating === option.value && "text-white font-medium")}>{option.label}</Text>
                         </Pressable>
                     ))}
                     </View>

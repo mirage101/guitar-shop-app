@@ -1,66 +1,222 @@
-# Guitar Shop app
+# Guitar Shop App
 
-A full-stack guitar shopping platform with:
+Full-stack guitar shopping project:
+- Mobile app: Expo + React Native (folder: guitar-shop)
+- Admin/backend: Next.js + Prisma (folder: backend)
+- Data: Firebase Auth + Firestore
 
-- Mobile client built with Expo + React Native (folder: `guitar-shop`)
-- Admin/backend panel built with Next.js + Prisma (folder: `backend`)
-- Firestore used for mobile product/order data
+## What It Does
+- Browse and search guitars
+- View product details
+- Add to cart and checkout
+- Manage wishlist with deal alerts
+- Login/register/forgot password
+- View orders, order details, and reorder
 
-## Project Purpose
+APK URL:
+https://expo.dev/artifacts/eas/pfg7htkqhqYvBRzXP2ZH6S.apk
 
-The app helps users discover guitars, manage wishlist/cart, and place orders from mobile, while admins manage products and data workflows in the backend.
+##Functional Guide
 
-## Repository Structure
+###User Access and Permissions
+####What an unauthenticated user can access:
+Store browsing (home/store list of products)
+Product details page
+Product type listing/filtering
+Cart screen and cart item management
+Login screen
+Register screen
+Forgot password flow
 
-- `guitar-shop/` - Mobile app (Expo Router)
-- `backend/` - Admin app + import/migration scripts (Next.js, Prisma)
+####Available actions as guest:
+- can search products, open product details, increase, decrease cart quantity, start checkout flow (but login is required to place an order), can create account or log in
 
-## Prerequisites
+####Authenticated User
+Authenticated user can place a new order, reorder it, remove it, update cart quantities, toggle wishlist items, toggle deal-alert prefencies, remove items from cart and wishlist
 
-Install these first:
+###Authentication & Session Handling
+The root layout mounts global providers, including the user provider. Authentication status is checked as the app listens to Firebase Auth state changes using onAuthStateChanged, if a user exists, user data is set in context, if no user exists, context is set to null. Login and registration use Firebase Auth methods. After success, the app gets the Firebase ID token, stores it locally, sets user data in contexts and navigates to the home/store route= On logout app calls Firebase signOut, then it clears user context and removes the stored token and after that redirects to home. Primary session persistence is handled by Firebase Auth internally.
+The app also stores an auth token locally with secureStore. Storage helpers are in authStorage.js. On app launch, Firebase restores the previous auth session if it is still valid. The onAuthStateChanged listener in UserContext immediately hydrates userData from that restored session.
 
+###Navigation Structure
+How navigation is split between authenticated and unauthenticated users: 
+- app always loads one root Stack navigator, defined in _layout.jsx.
+- Inside that root Stack, the (tabs) group is the main entry point, plus extra stack screens like checkout, orders, wishlist, order-details, and product-type details.
+- Auth-based split is handled mostly in the tab configuration, not by completely separate root navigators:
+-In guitar-shop/app/(tabs)/_layout.jsx/_layout.jsx), Profile tab is shown only when user is logged in.
+-Login tab is shown only when user is not logged in. This is controlled with userData from context (tabBarItemStyle display toggle).
+
+Main Navigation
+Main sections:
+- Store (index)
+- Cart
+- Profile (authenticated only)
+- Login (guest only)
+Hidden tab routes (not shown in tab bar):
+- Register
+- Forgot Password
+- Product Details
+Nested Navigation
+Tabs group under guitar-shop/app/(tabs)/_layout.jsx/_layout.jsx) - Additional Stack detail screens outside tabs (checkout, orders, wishlist, order-details, product-type)
+What type of screens are included:
+
+Tab-level screens:
+Store, Cart, Profile/Login
+Auth utility screens:
+Register, Forgot Password
+Detail/flow screens:
+Product Details
+Product Type Details
+Checkout
+Orders list
+Order Details
+Wishlist
+
+###List -> Details Flow
+The main list screen is the Store screen, displays product data from Firestore products, including:
+id, name, description, image, sellPrice / mrp, currentStock,
+productType (id/name)
+How the user interacts with the list:
+- Scroll through products in a 2-column FlatList.
+- Search by product name/description.
+- Filter by product type and availability.
+- Sort by price (low to high / high to low).
+- Pull-to-refresh to force server fetch.
+- Tap product name or “View” button to open details.
+- Tap heart icon to add/remove wishlist directly from list card.
+- Tap product type chip to open product-type screen.
+How navigation is triggered:
+From each product card, navigation is triggered with router push to /product/[id], implemented from card interactions (name/view taps). Product type detail uses /product-type/[id] similarly.
+
+What data is received via route parameters:
+- Product Details and Product Type screen receives id
+
+How details data is loaded:
+id is read via useLocalSearchParams()and screen fetches the matching product by id (findProductById(id)).
+Then renders full product view with actions: add/remove cart,
+buy now, wishlist toggle
+
+###Data Source & Backend
+- Core services are Firebase Authentication + Cloud Firestore.
+The repository also includes a Next.js + Prisma backend/admin app for management and migration scripts.
+
+How data is accessed in the app
+- Store and product details load products via helper functions in firebaseProducts.js. Checkout creates new order documents in Firestore. Orders and Order Details fetch only the current user’s orders (filtered by customerId). Deleting/reordering orders updates Firestore directly.
+
+###Data Operations (CRUD)
+
+Read (GET):
+Products are fetched from Firestore and shown in Store, Product Details, and Product Type screens.
+Orders are fetched from Firestore (by customerId) and shown in My Orders and Order Details.
+Auth state is read from Firebase (onAuthStateChanged) to control access and tabs.
+Create (POST):
+New user account via Firebase Auth registration.
+New order is created in Checkout (orders collection).
+Reorder creates a new order from a previous one.
+Update / Delete (Mutation):
+
+Update: cart quantity changes, wishlist/deal-alert toggles, user/auth context updates.
+Delete: remove order, remove cart item, clear cart, remove wishlist item.
+
+UI update after changes:
+Local state updates instantly for cart/wishlist actions.
+Firestore changes trigger refetch/refresh (orders screens).
+Success/error feedback is shown with alerts/modals.
+
+###Forms & Validation
+
+Forms used:
+
+Login
+Register
+Forgot Password
+Checkout
+
+Validation rules:
+
+Email: required + valid format (login/register)
+Password: required + min 8 chars (login/register)
+Name: required + min 2 chars (register)
+Address: required + min length (checkout)
+City: required + letters-only pattern (checkout)
+
+Behavior:
+
+Submit is blocked when invalid.
+Field errors show inline (where applicable).
+Firebase errors are shown via alerts.
+Errors clear as the user edits inputs.
+
+###10. Native Device Features
+Used native features:
+Location
+Biometrics
+Haptics
+Local Notifications
+Secure Storage
+
+Where used + what it does:
+
+Location / Maps
+Used in: Checkout
+Does: gets current location and fills address/city fields.
+Biometrics
+Used in: Login
+Does: lets user log in with fingerprint/face unlock.
+Haptics
+Used in: Checkout
+Does: gives small vibration feedback when location action is tapped.
+Local Notifications
+Used in: Wishlist deal alerts
+Does: sends alert when watched item price drops.
+Secure Storage
+Used in: Auth/session handling
+Does: stores token safely on device for keeping user signed in.
+###Typical User Flow
+- User opens Store, browses/searches products, and opens a product details page.
+- User adds items to cart or wishlist, then logs in/registers if needed.
+- User goes to Checkout, enters delivery info, and places the order.
+- User opens Profile -> My Orders to view order history/details and reorder if needed.
+
+###Error & Edge Case Handling (short)
+Authentication errors:
+Invalid login, bad email, weak password, and user-not-found are caught and shown with clear alerts.
+
+Network/data errors:
+Firestore/API failures (load, create, delete) are caught with try/catch, then the app shows alert/retry messages instead of crashing.
+
+Empty or missing data states:
+App shows fallback UI like “No products found”, “Cart is empty”, “No orders yet”, and “Product not found”, with safe actions (go back/retry/login).
+## Quick Start
+
+### Prerequisites
 - Node.js 18+
-- npm 9+
-- Expo Go app on your device (for mobile testing)
+- npm
+- Expo Go (or Android emulator)
+- Firebase project
 
-Optional for local backend and data sync:
-
-- Firebase project with Firestore enabled
-- Firebase service account JSON file for backend migration scripts
-
-## Environment Setup
-
-### 1) Mobile app environment (`guitar-shop`)
-
-Create `guitar-shop/.env` with your Firebase client config:
+### Environment
+Create guitar-shop/.env:
 
 ```env
-EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+EXPO_PUBLIC_FIREBASE_API_KEY=...
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=...
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+EXPO_PUBLIC_FIREBASE_APP_ID=...
 ```
 
-In `guitar-shop/app.json`, set `expo.extra.BASE_URL` to your backend URL (example: `http://192.168.x.x:3001`).
-
-### 2) Backend environment (`backend`)
-
-Create or update `backend/.env`:
+Optional backend env (backend/.env):
 
 ```env
 DATABASE_URL=file:./dev.db
-JWT_SECRET=your_secret_here
-FIREBASE_PROJECT_ID=your_project_id
+JWT_SECRET=...
+FIREBASE_PROJECT_ID=...
 FIREBASE_SERVICE_ACCOUNT_FILE=./serviceAccountKey.json.json
 ```
 
-Place your Firebase service account JSON at the path set in `FIREBASE_SERVICE_ACCOUNT_FILE`.
-
-## Install Packages
-
-Run from repository root:
+### Install
 
 ```bash
 cd guitar-shop
@@ -70,166 +226,50 @@ cd ../backend
 npm install
 ```
 
-## Run The Project
-
-You usually run two terminals in parallel.
-
-### Terminal 1: Backend/Admin (Next.js)
+### Run
+Terminal 1:
 
 ```bash
 cd backend
 npm run dev
 ```
 
-Backend runs on port `3001`.
-
-### Terminal 2: Mobile app (Expo)
+Terminal 2:
 
 ```bash
 cd guitar-shop
 npm run start
 ```
 
-Then press:
-
-- `a` for Android emulator
-- `i` for iOS simulator (macOS)
-- `w` for web
-- or scan QR with Expo Go
-
-## Useful Commands
-
-### Mobile (`guitar-shop`)
-
-```bash
-npm run start
-npm run android
-npm run ios
-npm run web
-```
-
-### Backend (`backend`)
-
-```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
-npm run set-admin
-npm run import-products-json
-npm run import-products-json:upsert
-npm run migrate-products-firestore
-```
-
-## Build Android APK
-
-Use Expo EAS Build to generate an installable Android APK.
-
-### 1) Install and login
-
-```bash
-npm install -g eas-cli
-eas login
-```
-
-### 2) Configure EAS in mobile app
+## APK Build
 
 ```bash
 cd guitar-shop
-eas build:configure
+npx eas login
+npx eas build -p android --profile preview
 ```
 
-The project already includes:
+Use the build URL from EAS to download and install the APK.
 
-- `guitar-shop/eas.json` with `preview` profile for APK
-- Android package id in `guitar-shop/app.json`
 
-### 3) Build APK
 
-```bash
-cd guitar-shop
-eas build -p android --profile preview
-```
+## Main User Flow
+1. Open Store and browse products.
+2. Open product details and add items to cart/wishlist.
+3. Login/Register if needed.
+4. Checkout and place order.
+5. Track orders in Profile -> My Orders.
 
-After build completes, Expo provides a URL/QR to download the APK.
-
-### 4) Install on Android phone
-
-1. Open the build URL on the phone.
-2. Download the APK.
-3. Allow install from unknown sources (if prompted).
-4. Install and launch.
-
-### Production Play Store build (AAB)
-
-```bash
-cd guitar-shop
-eas build -p android --profile production
-```
-
-Use this output for Google Play submission.
-
-## Functional Guide
-
-### Main Features
-
-1. Product discovery
-- Home screen with searchable product list
-- Type/category chips for browsing
-- Pull-to-refresh for fresh product data
-- Product details with pricing, stock, rating, and description
-
-2. Cart and checkout
-- Add/remove products in cart
-- Quantity controls and total calculation
-- Checkout form with address and city validation
-- Optional location autofill for address (mobile)
-- Place order with cash-on-delivery flow
-
-3. Wishlist
-- Heart icon toggle from product cards and product details
-- Dedicated wishlist screen
-- Deal alert toggle and notification logic
-
-4. Authentication and account
-- Login/register flows
-- Forgot password flow
-- Profile tab visibility based on auth state
-- Optional biometric login support on device
-
-5. Orders
-- Orders list with status badges
-- Order details with items, totals, and metadata
-- Reorder action from order details
-
-6. UX and mobile behavior
-- Loading and error states on key data screens
-- Safe-area and keyboard-aware forms
-- Reanimated interactions for key tap/remove actions
-
-### Typical User Flow
-
-1. User opens app and browses products on Home
-2. User filters/searches by type or keyword
-3. User opens product detail and adds item to cart or wishlist
-4. User reviews cart and proceeds to checkout
-5. User enters delivery details and places order
-6. User tracks order in Orders and can reorder later
-
-### Admin/Data Flow
-
-1. Admin runs backend panel
-2. Product seed data can be imported from JSON
-3. Products can be migrated/synced to Firestore for mobile consumption
+## Core Features
+- Auth: login, register, forgot password, logout
+- Store: filters, search, product type navigation
+- Cart: quantity management + total
+- Checkout: address/city validation + location autofill
+- Wishlist: save items + deal notification toggle
+- Orders: list, details, reorder, delete
 
 ## Troubleshooting
-
-- If mobile cannot fetch images/products, verify Firebase env vars and Firestore access rules.
-- If backend scripts fail with service account errors, verify `FIREBASE_SERVICE_ACCOUNT_FILE` path and JSON content.
-- If mobile cannot reach backend, update `expo.extra.BASE_URL` in `guitar-shop/app.json` to your machine IP and backend port.
-- If native dependency changes were made, restart Metro and rebuild the app.
-
-## Notes
-
-- Keep service account files out of git.
-- Ensure the backend is reachable from your phone and emulator on the same network when testing mobile + backend together.
+- Check Firebase env values if auth/data fails.
+- Confirm Firestore rules and collections (products, orders).
+- If mobile cannot reach backend, update BASE_URL in guitar-shop/app.json.
+- Restart Metro after dependency changes.

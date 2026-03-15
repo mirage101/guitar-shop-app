@@ -16,7 +16,6 @@ export default function App() {
     search: "",
     productTypeId: "all",
     sortBy: "all",
-    rating: "all",
     inStock: "all"
   })
   const [openFilterModal, setOpenFilterModal] = useState(false);
@@ -71,13 +70,6 @@ export default function App() {
           return typeId === String(filters.productTypeId) || typeName === selectedType;
         })
         .filter((product) => {
-          if (filters.rating === "all") {
-            return true;
-          }
-
-          return Number(product?.rating ?? 0) >= Number(filters.rating);
-        })
-        .filter((product) => {
           if (filters.inStock === "all") {
             return true;
           }
@@ -124,7 +116,7 @@ export default function App() {
 
   useEffect(()=>{
     fetchProductData()
-  }, [debouncedSearch, filters.productTypeId, filters.sortBy, filters.minPrice, filters.maxPrice, filters.rating, filters.inStock]);
+  }, [debouncedSearch, filters.productTypeId, filters.sortBy, filters.minPrice, filters.maxPrice, filters.inStock]);
 
   useEffect(() => {
     fetchTypeOptions();
