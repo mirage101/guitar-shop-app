@@ -16,12 +16,12 @@ export default function TabLayout() {
                 tabBarActiveTintColor: "#2563EB",
                 tabBarInactiveTintColor: "#6B7280",
                 tabBarStyle: {
-                    height: 68,
-                    paddingTop: 6,
-                    paddingBottom: 8,
+                    height: 78,
+                    paddingTop: 8,
+                    paddingBottom:8,
                 },
                 tabBarLabelStyle: {
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: "600",
                     lineHeight: 14,
                     marginTop: 0,
@@ -34,7 +34,7 @@ export default function TabLayout() {
         <Tabs.Screen name="index" options={{
                 title: "Store",
                 headerShown: false,
-                tabBarIcon: ({ color }) => <FontAwesome name="home" size={26} color={color} />
+                tabBarIcon: ({ color }) => <FontAwesome name="home" size={32} color={color} />
             }} />
             <Tabs.Screen name="cart" options={{
                 title: "Cart",
@@ -46,7 +46,7 @@ export default function TabLayout() {
                                 <Text className="text-sm font-semibold text-white">{cartItems.length}</Text>
                             </View>
                         ) : null}
-                        <FontAwesome name="shopping-cart" size={26} color={color} />
+                        <FontAwesome name="shopping-cart" size={32} color={color} />
                     </View>
             }} />
             
@@ -56,7 +56,7 @@ export default function TabLayout() {
                 tabBarItemStyle: {
                     display: userData ? "flex" : "none"
                 },
-                tabBarIcon: ({ color }) => <FontAwesome name="user" size={26} color={color} />
+                tabBarIcon: ({ color }) => <FontAwesome name="user" size={32} color={color} />
             }} />
             <Tabs.Screen name="login" options={{
                 title: "Login",
@@ -64,12 +64,12 @@ export default function TabLayout() {
                 tabBarItemStyle: {
                     display: userData ? "none" : "flex"
                 },
-                tabBarIcon: ({ color }) => <FontAwesome name="user" size={26} color={color} />
+                tabBarIcon: ({ color }) => <FontAwesome name="user" size={32} color={color} />
             }} />
             <Tabs.Screen name="register" options={{
                 title: "Register",
                 headerShown: false,
-                tabBarIcon: ({ color }) => <FontAwesome name="user" size={26} color={color} />,
+                tabBarIcon: ({ color }) => <FontAwesome name="user" size={32} color={color} />,
                 tabBarItemStyle: {
                     display: "none",
                 }
@@ -79,6 +79,14 @@ export default function TabLayout() {
                 options={{
                     href: null, // hide from tab bar
                     headerShown: false,
+                }}
+                />
+            <Tabs.Screen
+                name="product/[id]"
+                options={{
+                    href: null,
+                    title: "Product Details",
+                    headerBackTitle: "Back",
                 }}
                 />
         </Tabs>

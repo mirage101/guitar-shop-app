@@ -1,15 +1,15 @@
 import { useLocalSearchParams, router } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ActivityIndicator } from "react-native";
-import { useEffect,useState } from "react";
-import {FontAwesome} from "@expo/vector-icons";
-import { useProductContext } from "../../components/ProductContext";
-import { cn } from "../../lib/utils";
-import { findProductById } from "../../lib/firebaseProducts";
+import { useEffect, useState } from "react";
+import { FontAwesome } from "@expo/vector-icons";
+import { useProductContext } from "../../../components/ProductContext";
+import { cn } from "../../../lib/utils";
+import { findProductById } from "../../../lib/firebaseProducts";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from "react-native-reanimated";
 
-const ProductDetails = () =>{
-    const {id} = useLocalSearchParams();
-    const {addProductToCart, removeProductFromCart, cartItems, toggleWishlistItem, isWishlisted} = useProductContext();
+const ProductDetails = () => {
+    const { id } = useLocalSearchParams();
+    const { addProductToCart, removeProductFromCart, cartItems, toggleWishlistItem, isWishlisted } = useProductContext();
     const [product, setProduct] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -18,29 +18,29 @@ const ProductDetails = () =>{
 
     const isProductInCart = cartItems.some((item) => item.id === product.id);
     const fetchProductDetails = async () => {
-          if (!id) {
-              setError("Invalid product id.");
-              setLoading(false);
-              return;
-          }
+        if (!id) {
+            setError("Invalid product id.");
+            setLoading(false);
+            return;
+        }
 
-       try {
-              setLoading(true);
-              setError("");
+        try {
+            setLoading(true);
+            setError("");
             const fetchedProduct = await findProductById(id);
-              if (!fetchedProduct) {
-                 setProduct({});
-                 setError("Product not found.");
-                 return;
-              }
+            if (!fetchedProduct) {
+                setProduct({});
+                setError("Product not found.");
+                return;
+            }
 
-              setProduct(fetchedProduct);
-       } catch (error) {
+            setProduct(fetchedProduct);
+        } catch (error) {
             console.log("Product fetch error:", error);
-              setError(error?.message || "Unable to load product details.");
-       }finally{
-        setLoading(false)
-       };
+            setError(error?.message || "Unable to load product details.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const imageUri = product?.image
@@ -53,22 +53,22 @@ const ProductDetails = () =>{
         fetchProductDetails();
     }, [id]);
 
-    const handleCartItems = () =>{
+    const handleCartItems = () => {
         cartButtonScale.value = withSequence(
             withTiming(0.95, { duration: 80 }),
             withSpring(1.05, { damping: 10, stiffness: 220 }),
             withSpring(1, { damping: 12, stiffness: 180 })
         );
 
-        if(isProductInCart) {
-            removeProductFromCart(product.id)
-        }else{
+        if (isProductInCart) {
+            removeProductFromCart(product.id);
+        } else {
             addProductToCart({
                 ...product,
                 quantity: 1,
-            });  
-        }        
-    }
+            });
+        }
+    };
 
     const handleBuyProduct = () => {
         addProductToCart({
@@ -76,7 +76,7 @@ const ProductDetails = () =>{
             quantity: 1,
         });
         router.push("/cart");
-    }
+    };
 
     const ratingStars = Math.max(0, Math.floor(Number(product?.rating || 0)));
     const hasMrp = Number(product?.mrp ?? 0) > 0;
@@ -105,9 +105,9 @@ const ProductDetails = () =>{
     if (loading) {
         return (
             <View className="items-center justify-center flex-1">
-                <ActivityIndicator size="large"/>
+                <ActivityIndicator size="large" />
             </View>
-        )
+        );
     }
 
     if (error) {
@@ -122,16 +122,16 @@ const ProductDetails = () =>{
                     <Text className="font-semibold text-gray-700">Go Back</Text>
                 </TouchableOpacity>
             </View>
-        )
+        );
     }
 
-    return(
-        <View className="flex-1 p-10 bg-white">
-            <Image 
+    return (
+        <View className="flex-1 px-10 bg-white">
+            <Image
                 source={imageUri ? { uri: imageUri } : undefined}
                 className="w-full h-60"
                 resizeMode="contain"
-                />
+            />
             <View className="p-5">
                 <View className="flex-row items-center justify-between">
                     <Text className="px-3 py-1 text-xs font-semibold text-gray-500 bg-gray-100 rounded-full">
@@ -155,8 +155,8 @@ const ProductDetails = () =>{
                     {product?.name}
                 </Text>
                 <View className="flex-row items-center gap-1">
-                    {[...Array(ratingStars)].map((_,index)=>(
-                    <FontAwesome name="star" size={16} color="#FFD700" key={index}/>
+                    {[...Array(ratingStars)].map((_, index) => (
+                        <FontAwesome name="star" size={16} color="#FFD700" key={index} />
                     ))}
                 </View>
                 <View className="flex-col gap-2 my-5">
@@ -180,22 +180,22 @@ const ProductDetails = () =>{
                     <Text className="text-gray-600">{product?.description}</Text>
                 </View>
                 <View className="flex-row mt-5 gap-x-4">
-                    <Animated.View style={[{ width: "100%", maxWidth: 160 }, cartButtonAnimatedStyle]}>
+                    <Animated.View style={[{ width: "100%", maxWidth: 130 }, cartButtonAnimatedStyle]}>
                         <TouchableOpacity onPress={handleCartItems} className={cn("px-3 py-1 border border-blue-500 rounded-md", isProductInCart && "border-red-400")}>
                             <Text className={cn("text-lg font-semibold text-center text-blue-500", isProductInCart && "text-red-500")}>
-                                {isProductInCart ? "Remove From Cart" : "Add To Cart"}  
+                                {isProductInCart ? "Remove From Cart" : "Add To Cart"}
                             </Text>
                         </TouchableOpacity>
                     </Animated.View>
-                    <TouchableOpacity className="px-3 py-1 bg-blue-500 border border-blue-500 rounded-md w-full max-w-[160px]" onPress={handleBuyProduct}>
-                    <Text className="text-lg font-semibold text-center text-white">
-                           Buy Now
+                    <TouchableOpacity className="px-1 py-1 bg-blue-500 border border-blue-500 rounded-md w-full max-w-[130px]" onPress={handleBuyProduct}>
+                        <Text className="text-lg font-semibold text-center text-white">
+                            Buy Now
                         </Text>
                     </TouchableOpacity>
                 </View>
             </View>
         </View>
-    )
-}
+    );
+};
 
 export default ProductDetails;

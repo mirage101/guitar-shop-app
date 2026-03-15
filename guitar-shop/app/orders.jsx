@@ -169,14 +169,14 @@ const Orders = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 p-8 bg-white">
-      <Text className="mb-4 text-3xl font-semibold">My Orders</Text>
+    <SafeAreaView className="flex-1 px-6 py-8 bg-white">
       {orders.length === 0 ? (
         <View className="items-center justify-center flex-1">
           <Text className="text-xl font-medium">No orders yet.</Text>
         </View>
       ) : (
         <FlatList
+           className="p-3"
           data={orders}
           keyExtractor={(item) => item.id}
           ListFooterComponent={
